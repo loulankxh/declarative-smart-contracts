@@ -1,7 +1,7 @@
 #body,head,ruleId,isAgg,isTx
  ,setApprovedForAll,0,false,true
-exists,transfer,1,false,true
 owner,transfer,1,false,true
+exists,transfer,1,false,true
 approval,approved,2,false,false
 ownerOf,approved,2,false,false
 setApprovedForAll,isApprovedForAll,3,false,false
@@ -17,6 +17,6 @@ exists,tokenNoOwner,10,false,false
 ownerOf,transfer,11,false,true
 latestTransfer,exists,13,false,false
 exists,transfer,14,false,true
-owner,transfer,14,false,true
 ownerOf,transfer,14,false,true
+owner,transfer,14,false,true
 transfer,latestTransfer,15,true,false
