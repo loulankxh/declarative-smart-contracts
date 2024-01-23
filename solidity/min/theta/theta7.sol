@@ -40,7 +40,6 @@ contract Theta {
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>BalanceOfTuple) balanceOf;
   event AllowPrecirculation(address p,bool b);
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event DisallowPrecirculation(address p,bool b);
@@ -106,16 +105,22 @@ contract Theta {
         revert("Rule condition failed");
       }
   }
-  function updateOwnerOnInsertConstructor_r19() private    {
-      address s = msg.sender;
-      owner = OwnerTuple(s,true);
+  function updateTotalSupplyOnIncrementAllBurn_r22(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
   }
-  function updateAllowanceTotalOnInsertIncreaseAllowance_r16(address o,address s,uint n) private    {
-      allowanceTotal[o][s].m += n;
+  function updateAllowanceOnIncrementAllowanceTotal_r25(address o,address s,int m) private    {
+      // Empty()
   }
   function updateTotalOutOnInsertTransfer_r23(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalOut_r10(p,delta0);
+  }
+  function updateAllowanceTotalOnInsertIncreaseAllowance_r16(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementAllowanceTotal_r25(o,s,delta0);
+      allowanceTotal[o][s].m += n;
   }
   function updateBalanceOfOnIncrementTotalOut_r10(address p,int o) private    {
       int _delta = int(-o);
@@ -131,27 +136,27 @@ contract Theta {
       }
       return false;
   }
+  function updateSpentTotalOnInsertTransferFrom_r13(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementSpentTotal_r25(o,s,delta0);
+      spentTotal[o][s].m += n;
+  }
   function updatePrecirculatedOnInsertAllowPrecirculation_r6(address p,bool b) private    {
+      updateCanTransferOnInsertPrecirculated_r5(p,b);
       precirculated[p] = PrecirculatedTuple(b,true);
+  }
+  function updateCanTransferOnInsertPrecirculated_r5(address p,bool true) private    {
+      // Empty()
   }
   function updateAllMintOnInsertMint_r4(uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllMint_r22(delta0);
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf[o].n;
-      uint k = allowance(o,s);
-      if(m>=n && k>=n && canTransfer(o,r)) {
-        updateSpentTotalOnInsertTransferFrom_r13(o,s,n);
-        updateTransferOnInsertTransferFrom_r0(o,r,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
-      return false;
-  }
   function updateUnlockTimeOnInsertConstructor_r8(uint t) private    {
       unlockTime = UnlockTimeTuple(t,true);
+  }
+  function updateAllowanceOnIncrementSpentTotal_r25(address o,address s,int l) private    {
+      // Empty()
   }
   function updateBalanceOfOnIncrementTotalBurn_r10(address p,int m) private    {
       int _delta = int(-m);
@@ -163,13 +168,20 @@ contract Theta {
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
   }
-  function updateSpentTotalOnInsertTransferFrom_r13(address o,address s,uint n) private    {
-      spentTotal[o][s].m += n;
+  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf[o].n;
+      uint k = allowance(o,s);
+      if(m>=n && k>=n && canTransfer(o,r)) {
+        updateSpentTotalOnInsertTransferFrom_r13(o,s,n);
+        updateTransferOnInsertTransferFrom_r0(o,r,n);
+        return true;
+      }
+      return false;
   }
-  function updateTotalSupplyOnIncrementAllBurn_r22(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+  function updateOwnerOnInsertConstructor_r19() private    {
+      address s = msg.sender;
+      owner = OwnerTuple(s,true);
   }
   function updateAllBurnOnInsertBurn_r27(uint n) private    {
       int delta0 = int(n);
@@ -206,9 +218,6 @@ contract Theta {
       uint n = m-l;
       return n;
   }
-  function updatePrecirculatedOnInsertDisallowPrecirculation_r2(address p,bool b) private    {
-      precirculated[p] = PrecirculatedTuple(b,true);
-  }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
       int value = convertedX+delta;
@@ -240,6 +249,10 @@ contract Theta {
         return true;
       }
       return false;
+  }
+  function updatePrecirculatedOnInsertDisallowPrecirculation_r2(address p,bool b) private    {
+      updateCanTransferOnInsertPrecirculated_r5(p,b);
+      precirculated[p] = PrecirculatedTuple(b,true);
   }
   function updateTotalMintOnInsertMint_r21(address p,uint n) private    {
       int delta0 = int(n);

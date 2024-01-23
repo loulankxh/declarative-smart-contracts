@@ -59,7 +59,6 @@ contract Erc20 {
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event IncreaseAllowance(address p,address s,uint n);
@@ -187,18 +186,6 @@ contract Erc20 {
       updateAllowanceOnIncrementSpentTotal_r15(o,s,delta0);
       spentTotal[o][s].m += n;
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r18(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint k = allowance[o][s].n;
-      uint m = balanceOf[o].n;
-      if(m>=n && k>=n) {
-        updateTransferOnInsertTransferFrom_r0(o,r,n);
-        updateSpentTotalOnInsertTransferFrom_r6(o,s,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
-      return false;
-  }
   function updateTotalInOnInsertTransfer_r8(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalIn_r5(p,delta0);
@@ -258,6 +245,17 @@ contract Erc20 {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllBurn_r11(delta0);
       allBurn.n += n;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r18(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance[o][s].n;
+      uint m = balanceOf[o].n;
+      if(m>=n && k>=n) {
+        updateTransferOnInsertTransferFrom_r0(o,r,n);
+        updateSpentTotalOnInsertTransferFrom_r6(o,s,n);
+        return true;
+      }
+      return false;
   }
   function updateTotalMintOnInsertMint_r10(address p,uint n) private    {
       int delta0 = int(n);

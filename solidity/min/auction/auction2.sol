@@ -40,7 +40,6 @@ contract Auction {
   EndTimeTuple endTime;
   mapping(address=>BidTotalTuple) bidTotal;
   EndTuple end;
-  event Withdraw(address bidder,uint amount);
   event EndAuction(bool b);
   event Send(address p,uint amount);
   event Bid(address bidder,uint amount);
@@ -79,8 +78,11 @@ contract Auction {
       uint n = b-w;
       return n;
   }
-  function updateBidTotalOnInsertBid_r12(address p,uint m) private    {
-      bidTotal[p].n += m;
+  function updateHighestBidOnInsertBid_r1(address p,uint m) private    {
+      uint _max = highestBid.amount;
+      if(m>_max) {
+        highestBid = HighestBidTuple(p,m,true);
+      }
   }
   function updateBidOnInsertRecv_bid_r10() private   returns (bool) {
       uint t1 = block.timestamp;
@@ -113,32 +115,12 @@ contract Auction {
       }
       return false;
   }
-  function updateWithdrawOnInsertRecv_withdraw_r2() private   returns (bool) {
-      address p = highestBid.bidder;
-      uint m = highestBid.amount;
-      if(true==end.b) {
-        if(p==msg.sender) {
-          uint n = balance(p);
-          if(n>m) {
-            uint s = n-m;
-            updateWithdrawTotalOnInsertWithdraw_r4(p,s);
-            updateSendOnInsertWithdraw_r8(p,s);
-            emit Withdraw(p,s);
-            return true;
-          }
-        }
-      }
-      return false;
-  }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
-  }
   function updateOwnerOnInsertConstructor_r9() private    {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
+  }
+  function updateBalanceOnIncrementWithdrawTotal_r7(address p,int w) private    {
+      // Empty()
   }
   function updateSendOnInsertRecv_endAuction_r3() private   returns (bool) {
       uint t1 = block.timestamp;
@@ -157,11 +139,18 @@ contract Auction {
       }
       return false;
   }
-  function updateBeneficiaryOnInsertConstructor_r11(address p) private    {
-      beneficiary = BeneficiaryTuple(p,true);
+  function updateBidTotalOnInsertBid_r12(address p,uint m) private    {
+      int delta0 = int(m);
+      updateBalanceOnIncrementBidTotal_r7(p,delta0);
+      bidTotal[p].n += m;
   }
   function updateWithdrawTotalOnInsertWithdraw_r4(address p,uint m) private    {
+      int delta0 = int(m);
+      updateBalanceOnIncrementWithdrawTotal_r7(p,delta0);
       withdrawTotal[p].n += m;
+  }
+  function updateBeneficiaryOnInsertConstructor_r11(address p) private    {
+      beneficiary = BeneficiaryTuple(p,true);
   }
   function updateEndTimeOnInsertConstructor_r15(uint d) private    {
       uint t = block.timestamp;
@@ -177,11 +166,8 @@ contract Auction {
         end = EndTuple(true,true);
       }
   }
-  function updateHighestBidOnInsertBid_r1(address p,uint m) private    {
-      uint _max = highestBid.amount;
-      if(m>_max) {
-        highestBid = HighestBidTuple(p,m,true);
-      }
+  function updateBalanceOnIncrementBidTotal_r7(address p,int b) private    {
+      // Empty()
   }
   function updateWithdrawOnInsertRecv_withdraw_r5() private   returns (bool) {
       if(true==end.b) {
@@ -191,8 +177,29 @@ contract Auction {
         if(p!=h && n>0) {
           updateWithdrawTotalOnInsertWithdraw_r4(p,n);
           updateSendOnInsertWithdraw_r8(p,n);
-          emit Withdraw(p,n);
           return true;
+        }
+      }
+      return false;
+  }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
+  }
+  function updateWithdrawOnInsertRecv_withdraw_r2() private   returns (bool) {
+      address p = highestBid.bidder;
+      uint m = highestBid.amount;
+      if(true==end.b) {
+        if(p==msg.sender) {
+          uint n = balance(p);
+          if(n>m) {
+            uint s = n-m;
+            updateWithdrawTotalOnInsertWithdraw_r4(p,s);
+            updateSendOnInsertWithdraw_r8(p,s);
+            return true;
+          }
         }
       }
       return false;

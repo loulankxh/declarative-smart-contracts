@@ -3,16 +3,12 @@ contract Shib {
     address p;
     bool _valid;
   }
-  struct DecreaseAllowanceTotalTuple {
-    uint m;
-    bool _valid;
-  }
   struct TotalSupplyTuple {
     uint n;
     bool _valid;
   }
-  struct SpentTotalTuple {
-    uint m;
+  struct AllowanceTuple {
+    uint n;
     bool _valid;
   }
   struct TotalBalancesTuple {
@@ -23,23 +19,15 @@ contract Shib {
     uint n;
     bool _valid;
   }
-  struct IncreaseAllowanceTotalTuple {
-    uint m;
-    bool _valid;
-  }
   OwnerTuple owner;
-  mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
   TotalSupplyTuple totalSupply;
   TotalBalancesTuple totalBalances;
-  mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>BalanceOfTuple) balanceOf;
-  mapping(address=>mapping(address=>IncreaseAllowanceTotalTuple)) increaseAllowanceTotal;
-  event TransferFrom(address from,address to,address spender,uint amount);
+  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event DecreaseAllowance(address p,address s,uint n);
   event IncreaseAllowance(address p,address s,uint n);
-  event BurnFrom(address p,address from,uint n);
   event Transfer(address from,address to,uint amount);
   constructor(uint name,uint symbol,uint decimals,uint totalSupply,address feeReceiver,address tokenOwnerAddress) public {
     updateBalanceOfOnInsertConstructor_r0(totalSupply,tokenOwnerAddress);
@@ -50,6 +38,10 @@ contract Shib {
   }
   function getTotalSupply() public view  returns (uint) {
       uint n = totalSupply.n;
+      return n;
+  }
+  function getAllowance(address p,address s) public view  returns (uint) {
+      uint n = allowance[p][s].n;
       return n;
   }
   function getBalanceOf(address p) public view  returns (uint) {
@@ -81,10 +73,6 @@ contract Shib {
         revert("Rule condition failed");
       }
   }
-  function getAllowance(address p,address s) public view  returns (uint) {
-      uint n = allowance(p,s);
-      return n;
-  }
   function increaseAllowance(address s,uint n) public    {
       bool r11 = updateIncreaseAllowanceOnInsertRecv_increaseAllowance_r11(s,n);
       if(r11==false) {
@@ -112,24 +100,18 @@ contract Shib {
       }
       return false;
   }
-  function updateTotalSupplyOnIncrementAllBurn_r17(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+  function updateTotalBurnOnInsertBurn_r16(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalBurn_r7(p,delta0);
   }
-  function updateTotalSupplyOnInsertConstructor_r4(uint n) private    {
-      totalSupply = TotalSupplyTuple(n,true);
-  }
-  function allowance(address o,address s) private view  returns (uint) {
-      uint l = spentTotal[o][s].m;
-      uint d = decreaseAllowanceTotal[o][s].m;
-      uint m = increaseAllowanceTotal[o][s].m;
-      uint n = (m-l)-d;
-      return n;
+  function updateTransferOnInsertTransferFrom_r12(address o,address r,uint n) private    {
+      updateTotalInOnInsertTransfer_r30(r,n);
+      updateTotalOutOnInsertTransfer_r22(o,n);
+      emit Transfer(o,r,n);
   }
   function updateIncreaseAllowanceOnInsertRecv_approve_r18(address s,uint n) private   returns (bool) {
       address o = msg.sender;
-      uint m = allowance(o,s);
+      uint m = allowance[o][s].n;
       if(n>=m) {
         uint d = n-m;
         updateIncreaseAllowanceTotalOnInsertIncreaseAllowance_r29(o,s,d);
@@ -138,11 +120,43 @@ contract Shib {
       }
       return false;
   }
-  function updateTotalBalancesOnInsertConstructor_r28(uint n) private    {
-      totalBalances = TotalBalancesTuple(n,true);
+  function updateAllowanceOnIncrementIncreaseAllowanceTotal_r1(address o,address s,int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
-  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(address o,address s,uint n) private    {
-      decreaseAllowanceTotal[o][s].m += n;
+  function updateTotalSupplyOnIncrementAllBurn_r17(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
+  }
+  function updateTotalOutOnInsertTransfer_r22(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalOut_r7(p,delta0);
+  }
+  function updateTotalSupplyOnInsertConstructor_r4(uint n) private    {
+      totalSupply = TotalSupplyTuple(n,true);
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r26(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance[o][s].n;
+      uint m = balanceOf[o].n;
+      if(m>=n && k>=n) {
+        updateSpentTotalOnInsertTransferFrom_r9(o,s,n);
+        updateTransferOnInsertTransferFrom_r12(o,r,n);
+        return true;
+      }
+      return false;
+  }
+  function updateBalanceOfOnIncrementTotalBurn_r7(address p,int m) private    {
+      int _delta = int(-m);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
+  }
+  function updateAllowanceOnIncrementDecreaseAllowanceTotal_r1(address o,address s,int d) private    {
+      int _delta = int(-d);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
   function updateTotalInOnInsertTransfer_r30(address p,uint n) private    {
       int delta0 = int(n);
@@ -153,30 +167,6 @@ contract Shib {
       updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(o,s,n);
       emit DecreaseAllowance(o,s,n);
       return true;
-      return false;
-  }
-  function updateTotalBurnOnInsertBurn_r16(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalBurn_r7(p,delta0);
-  }
-  function updateSpentTotalOnInsertTransferFrom_r9(address o,address s,uint n) private    {
-      spentTotal[o][s].m += n;
-  }
-  function updateTransferOnInsertTransferFrom_r12(address o,address r,uint n) private    {
-      updateTotalInOnInsertTransfer_r30(r,n);
-      updateTotalOutOnInsertTransfer_r22(o,n);
-      emit Transfer(o,r,n);
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r26(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf[o].n;
-      uint k = allowance(o,s);
-      if(m>=n && k>=n) {
-        updateSpentTotalOnInsertTransferFrom_r9(o,s,n);
-        updateTransferOnInsertTransferFrom_r12(o,r,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
       return false;
   }
   function updateBurnOnInsertRecv_burn_r5(uint n) private   returns (bool) {
@@ -195,12 +185,13 @@ contract Shib {
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
   }
-  function updateTotalOutOnInsertTransfer_r22(address p,uint n) private    {
+  function updateSpentTotalOnInsertTransferFrom_r9(address o,address s,uint n) private    {
       int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalOut_r7(p,delta0);
+      updateAllowanceOnIncrementSpentTotal_r1(o,s,delta0);
   }
   function updateIncreaseAllowanceTotalOnInsertIncreaseAllowance_r29(address o,address s,uint n) private    {
-      increaseAllowanceTotal[o][s].m += n;
+      int delta0 = int(n);
+      updateAllowanceOnIncrementIncreaseAllowanceTotal_r1(o,s,delta0);
   }
   function updateBalanceOfOnInsertConstructor_r0(uint n,address p) private    {
       balanceOf[p] = BalanceOfTuple(n,true);
@@ -222,14 +213,14 @@ contract Shib {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
   }
-  function updateBalanceOfOnIncrementTotalBurn_r7(address p,int m) private    {
-      int _delta = int(-m);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
+  function updateAllowanceOnIncrementSpentTotal_r1(address o,address s,int l) private    {
+      int _delta = int(-l);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
   function updateDecreaseAllowanceOnInsertRecv_approve_r13(address s,uint n) private   returns (bool) {
       address o = msg.sender;
-      uint m = allowance(o,s);
+      uint m = allowance[o][s].n;
       if(n<m) {
         uint d = m-n;
         updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(o,s,d);
@@ -237,6 +228,13 @@ contract Shib {
         return true;
       }
       return false;
+  }
+  function updateTotalBalancesOnInsertConstructor_r28(uint n) private    {
+      totalBalances = TotalBalancesTuple(n,true);
+  }
+  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementDecreaseAllowanceTotal_r1(o,s,delta0);
   }
   function updateBalanceOfOnIncrementTotalIn_r7(address p,int i) private    {
       int _delta = int(i);

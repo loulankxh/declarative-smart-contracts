@@ -55,7 +55,6 @@ contract Theta {
   TotalBalancesTuple totalBalances;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   event AllowPrecirculation(address p,bool b);
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event DisallowPrecirculation(address p,bool b);
@@ -121,79 +120,31 @@ contract Theta {
         revert("Rule condition failed");
       }
   }
-  function updateUnlockTimeOnInsertConstructor_r8(uint t) private    {
-      unlockTime = UnlockTimeTuple(t,true);
+  function updateTotalSupplyOnIncrementAllBurn_r22(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
   }
-  function updateOwnerOnInsertConstructor_r19() private    {
-      address s = msg.sender;
-      owner = OwnerTuple(s,true);
-  }
-  function updateAllowanceTotalOnInsertIncreaseAllowance_r16(address o,address s,uint n) private    {
-      allowanceTotal[o][s].m += n;
+  function updateAllowanceOnIncrementAllowanceTotal_r25(address o,address s,int m) private    {
+      // Empty()
   }
   function updateTotalBurnOnInsertBurn_r20(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalBurn_r10(p,delta0);
       totalBurn[p].n += n;
   }
   function updateTotalBalancesOnInsertConstructor_r12() private    {
       totalBalances = TotalBalancesTuple(0,true);
   }
-  function balanceOf(address p) private view  returns (uint) {
-      uint i = totalIn[p].n;
-      uint o = totalOut[p].n;
-      uint m = totalBurn[p].n;
-      uint n = totalMint[p].n;
-      uint s = ((n+i)-m)-o;
-      return s;
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf(o);
-      uint k = allowance(o,s);
-      if(m>=n && k>=n && canTransfer(o,r)) {
-        updateSpentTotalOnInsertTransferFrom_r13(o,s,n);
-        updateTransferOnInsertTransferFrom_r0(o,r,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
-      return false;
-  }
-  function updateTotalMintOnInsertMint_r21(address p,uint n) private    {
-      totalMint[p].n += n;
-  }
-  function updateMintOnInsertRecv_mint_r26(address p,uint n) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        if(p!=address(0)) {
-          updateTotalMintOnInsertMint_r21(p,n);
-          updateAllMintOnInsertMint_r4(n);
-          emit Mint(p,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updateAllowPrecirculationOnInsertRecv_allowPrecirculation_r18(address p) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        updatePrecirculatedOnInsertAllowPrecirculation_r6(p,bool(true));
-        emit AllowPrecirculation(p,true);
-        return true;
-      }
-      return false;
-  }
-  function updateTransferOnInsertRecv_transfer_r17(address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf(s);
-      if(n<=m && canTransfer(s,r)) {
-        updateTotalOutOnInsertTransfer_r23(s,n);
-        updateTotalInOnInsertTransfer_r15(r,n);
-        emit Transfer(s,r,n);
-        return true;
-      }
-      return false;
-  }
   function updatePrecirculatedOnInsertAllowPrecirculation_r6(address p,bool b) private    {
+      updateCanTransferOnInsertPrecirculated_r5(p,b);
       precirculated[p] = PrecirculatedTuple(b,true);
+  }
+  function updateCanTransferOnInsertPrecirculated_r5(address p,bool true) private    {
+      // Empty()
+  }
+  function updateBalanceOfOnIncrementTotalOut_r10(address p,int o) private    {
+      // Empty()
   }
   function updateTotalSupplyOnInsertConstructor_r3() private    {
       totalSupply = TotalSupplyTuple(0,true);
@@ -203,23 +154,18 @@ contract Theta {
       updateTotalInOnInsertTransfer_r15(r,n);
       emit Transfer(o,r,n);
   }
-  function updateAllMintOnInsertMint_r4(uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllMint_r22(delta0);
+  function updateUnlockTimeOnInsertConstructor_r8(uint t) private    {
+      unlockTime = UnlockTimeTuple(t,true);
   }
-  function updateTotalOutOnInsertTransfer_r23(address p,uint n) private    {
-      totalOut[p].n += n;
+  function updateAllowanceOnIncrementSpentTotal_r25(address o,address s,int l) private    {
+      // Empty()
   }
-  function updateTotalInOnInsertTransfer_r15(address p,uint n) private    {
-      totalIn[p].n += n;
+  function updateBalanceOfOnIncrementTotalIn_r10(address p,int i) private    {
+      // Empty()
   }
-  function updateSpentTotalOnInsertTransferFrom_r13(address o,address s,uint n) private    {
-      spentTotal[o][s].m += n;
-  }
-  function updateTotalSupplyOnIncrementAllBurn_r22(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+  function updateOwnerOnInsertConstructor_r19() private    {
+      address s = msg.sender;
+      owner = OwnerTuple(s,true);
   }
   function updateAllBurnOnInsertBurn_r27(uint n) private    {
       int delta0 = int(n);
@@ -230,20 +176,36 @@ contract Theta {
       uint newValue = updateuintByint(totalSupply.n,_delta);
       totalSupply.n = newValue;
   }
+  function updateAllowanceTotalOnInsertIncreaseAllowance_r16(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementAllowanceTotal_r25(o,s,delta0);
+      allowanceTotal[o][s].m += n;
+  }
+  function balanceOf(address p) private view  returns (uint) {
+      uint i = totalIn[p].n;
+      uint o = totalOut[p].n;
+      uint m = totalBurn[p].n;
+      uint n = totalMint[p].n;
+      uint s = ((n+i)-m)-o;
+      return s;
+  }
+  function updateBalanceOfOnIncrementTotalBurn_r10(address p,int m) private    {
+      // Empty()
+  }
   function allowance(address o,address s) private view  returns (uint) {
       uint l = spentTotal[o][s].m;
       uint m = allowanceTotal[o][s].m;
       uint n = m-l;
       return n;
   }
-  function updatePrecirculatedOnInsertDisallowPrecirculation_r2(address p,bool b) private    {
-      precirculated[p] = PrecirculatedTuple(b,true);
-  }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
       int value = convertedX+delta;
       uint convertedValue = uint(value);
       return convertedValue;
+  }
+  function updateBalanceOfOnIncrementTotalMint_r10(address p,int n) private    {
+      // Empty()
   }
   function updateDisallowPrecirculationOnInsertRecv_disallowPrecirculation_r14(address p) private   returns (bool) {
       address s = owner.p;
@@ -253,6 +215,11 @@ contract Theta {
         return true;
       }
       return false;
+  }
+  function updateTotalMintOnInsertMint_r21(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalMint_r10(p,delta0);
+      totalMint[p].n += n;
   }
   function updateBurnOnInsertRecv_burn_r9(address p,uint n) private   returns (bool) {
       address s = owner.p;
@@ -266,6 +233,58 @@ contract Theta {
         }
       }
       return false;
+  }
+  function updateMintOnInsertRecv_mint_r26(address p,uint n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        if(p!=address(0)) {
+          updateTotalMintOnInsertMint_r21(p,n);
+          updateAllMintOnInsertMint_r4(n);
+          emit Mint(p,n);
+          return true;
+        }
+      }
+      return false;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf(o);
+      uint k = allowance(o,s);
+      if(m>=n && k>=n && canTransfer(o,r)) {
+        updateSpentTotalOnInsertTransferFrom_r13(o,s,n);
+        updateTransferOnInsertTransferFrom_r0(o,r,n);
+        return true;
+      }
+      return false;
+  }
+  function updateAllowPrecirculationOnInsertRecv_allowPrecirculation_r18(address p) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        updatePrecirculatedOnInsertAllowPrecirculation_r6(p,bool(true));
+        emit AllowPrecirculation(p,true);
+        return true;
+      }
+      return false;
+  }
+  function updatePrecirculatedOnInsertDisallowPrecirculation_r2(address p,bool b) private    {
+      updateCanTransferOnInsertPrecirculated_r5(p,b);
+      precirculated[p] = PrecirculatedTuple(b,true);
+  }
+  function updateTransferOnInsertRecv_transfer_r17(address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf(s);
+      if(n<=m && canTransfer(s,r)) {
+        updateTotalOutOnInsertTransfer_r23(s,n);
+        updateTotalInOnInsertTransfer_r15(r,n);
+        emit Transfer(s,r,n);
+        return true;
+      }
+      return false;
+  }
+  function updateSpentTotalOnInsertTransferFrom_r13(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementSpentTotal_r25(o,s,delta0);
+      spentTotal[o][s].m += n;
   }
   function updateIncreaseAllowanceOnInsertRecv_approve_r28(address s,uint n) private   returns (bool) {
       address o = msg.sender;
@@ -288,5 +307,19 @@ contract Theta {
         }
       }
       return false;
+  }
+  function updateTotalOutOnInsertTransfer_r23(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalOut_r10(p,delta0);
+      totalOut[p].n += n;
+  }
+  function updateTotalInOnInsertTransfer_r15(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalIn_r10(p,delta0);
+      totalIn[p].n += n;
+  }
+  function updateAllMintOnInsertMint_r4(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r22(delta0);
   }
 }

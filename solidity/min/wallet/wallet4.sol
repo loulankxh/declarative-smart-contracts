@@ -15,13 +15,11 @@ contract Wallet {
     address p;
     bool _valid;
   }
-  AllMintTuple allMint;
-  OwnerTuple owner;
   AllBurnTuple allBurn;
+  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
+  AllMintTuple allMint;
   event Transfer(address from,address to,int amount);
-  event Mint(address p,int amount);
-  event Burn(address p,int amount);
   constructor() public {
     updateOwnerOnInsertConstructor_r2();
   }
@@ -65,13 +63,13 @@ contract Wallet {
       }
       return false;
   }
-  function updateMintOnInsertRecv_mint_r9(address p,int n) private   returns (bool) {
+  function updateBurnOnInsertRecv_burn_r3(address p,int n) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
-        if(n>0 && p!=address(0)) {
-          updateTransferOnInsertMint_r10(p,n);
-          updateAllMintOnInsertMint_r0(n);
-          emit Mint(p,n);
+        int m = balanceOf[p].n;
+        if(p!=address(0) && n<=m) {
+          updateAllBurnOnInsertBurn_r7(n);
+          updateTransferOnInsertBurn_r11(p,n);
           return true;
         }
       }
@@ -85,15 +83,14 @@ contract Wallet {
   function updateBalanceOfOnIncrementTotalIn_r1(address p,int i) private    {
       balanceOf[p].n += i;
   }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
-  }
   function updateOwnerOnInsertConstructor_r2() private    {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
+  }
+  function updateAllBurnOnInsertBurn_r7(int n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllBurn_r8(delta0);
+      allBurn.n += n;
   }
   function totalSupply() private view  returns (int) {
       int b = allBurn.n;
@@ -101,39 +98,48 @@ contract Wallet {
       int n = m-b;
       return n;
   }
-  function updateAllBurnOnInsertBurn_r7(int n) private    {
-      allBurn.n += n;
-  }
-  function updateBalanceOfOnIncrementTotalOut_r1(address p,int o) private    {
-      balanceOf[p].n -= o;
-  }
-  function updateTotalInOnInsertTransfer_r6(address p,int n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalIn_r1(p,delta0);
-  }
   function updateintByint(int x,int delta) private   returns (int) {
       int newValue = x+delta;
       return newValue;
   }
-  function updateAllMintOnInsertMint_r0(int n) private    {
-      allMint.n += n;
+  function updateTotalSupplyOnIncrementAllBurn_r8(int b) private    {
+      // Empty()
   }
-  function updateBurnOnInsertRecv_burn_r3(address p,int n) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        int m = balanceOf[p].n;
-        if(p!=address(0) && n<=m) {
-          updateAllBurnOnInsertBurn_r7(n);
-          updateTransferOnInsertBurn_r11(p,n);
-          emit Burn(p,n);
-          return true;
-        }
-      }
-      return false;
+  function updateBalanceOfOnIncrementTotalOut_r1(address p,int o) private    {
+      balanceOf[p].n -= o;
+  }
+  function updateTotalSupplyOnIncrementAllMint_r8(int m) private    {
+      // Empty()
+  }
+  function updateAllMintOnInsertMint_r0(int n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r8(delta0);
+      allMint.n += n;
   }
   function updateTransferOnInsertMint_r10(address p,int n) private    {
       updateTotalOutOnInsertTransfer_r4(address(0),n);
       updateTotalInOnInsertTransfer_r6(p,n);
       emit Transfer(address(0),p,n);
+  }
+  function updateTotalInOnInsertTransfer_r6(address p,int n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalIn_r1(p,delta0);
+  }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
+  }
+  function updateMintOnInsertRecv_mint_r9(address p,int n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        if(n>0 && p!=address(0)) {
+          updateTransferOnInsertMint_r10(p,n);
+          updateAllMintOnInsertMint_r0(n);
+          return true;
+        }
+      }
+      return false;
   }
 }

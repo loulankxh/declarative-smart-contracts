@@ -41,7 +41,6 @@ contract CrowFunding {
   mapping(address=>BalanceOfTuple) balanceOf;
   event Refund(address p,uint n);
   event Invest(address p,uint n);
-  event Closed(bool b);
   event Withdraw(address p,uint n);
   constructor(uint t,address b) public {
     updateRaisedOnInsertConstructor_r6();
@@ -108,14 +107,14 @@ contract CrowFunding {
       updateBalanceOfOnIncrementInvestTotal_r2(p,delta0);
       investTotal[p].n += m;
   }
-  function updateTotalBalanceOnInsertConstructor_r12() private    {
-      // Empty()
-  }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
       int value = convertedX+delta;
       uint convertedValue = uint(value);
       return convertedValue;
+  }
+  function updateSendOnInsertWithdraw_r0(address p,uint r) private    {
+      payable(p).send(r);
   }
   function updateRaisedOnInsertConstructor_r6() private    {
       raised = RaisedTuple(0,true);
@@ -144,6 +143,17 @@ contract CrowFunding {
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
   }
+  function updateTotalBalanceOnInsertConstructor_r12() private    {
+      // Empty()
+  }
+  function updateClosedOnInsertRecv_close_r9() private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        closed = ClosedTuple(true,true);
+        return true;
+      }
+      return false;
+  }
   function updateRefundTotalOnInsertRefund_r14(address p,uint m) private    {
       int delta0 = int(m);
       updateBalanceOfOnIncrementRefundTotal_r2(p,delta0);
@@ -163,18 +173,6 @@ contract CrowFunding {
         }
       }
       return false;
-  }
-  function updateClosedOnInsertRecv_close_r9() private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        closed = ClosedTuple(true,true);
-        emit Closed(true);
-        return true;
-      }
-      return false;
-  }
-  function updateSendOnInsertWithdraw_r0(address p,uint r) private    {
-      payable(p).send(r);
   }
   function updateOwnerOnInsertConstructor_r7() private    {
       address p = msg.sender;

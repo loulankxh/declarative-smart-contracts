@@ -74,7 +74,6 @@ contract Matic {
   AllBurnTuple allBurn;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   PausedTuple paused;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event RenouncePauser(address p,bool b);
   event Mint(address p,uint amount);
@@ -223,6 +222,30 @@ contract Matic {
       updateAllowanceTotalOnInsertIncreaseAllowance_r37(o,s,n);
       emit IncreaseAllowance(o,s,n);
       return true;
+      return false;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      if(false==paused.b) {
+        uint m = balanceOf[o].n;
+        uint k = allowance[o][s].n;
+        if(m>=n && k>=n) {
+          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
+          updateTransferOnInsertTransferFrom_r0(o,r,n);
+          return true;
+        }
+      }
+      return false;
+  }
+  function updatePauseOnInsertRecv_pause_r20() private   returns (bool) {
+      if(false==paused.b) {
+        address s = msg.sender;
+        if(true==isPauser[s].b) {
+          updatePausedOnInsertPause_r1(bool(true));
+          emit Pause(true);
+          return true;
+        }
+      }
       return false;
   }
   function updateBalanceOfOnIncrementTotalMint_r29(address p,int n) private    {
@@ -394,31 +417,6 @@ contract Matic {
         updateIsPauserOnInsertAddPauser_r24(p,bool(true));
         emit AddPauser(p,true);
         return true;
-      }
-      return false;
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(false==paused.b) {
-        uint m = balanceOf[o].n;
-        uint k = allowance[o][s].n;
-        if(m>=n && k>=n) {
-          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
-          updateTransferOnInsertTransferFrom_r0(o,r,n);
-          emit TransferFrom(o,r,s,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updatePauseOnInsertRecv_pause_r20() private   returns (bool) {
-      if(false==paused.b) {
-        address s = msg.sender;
-        if(true==isPauser[s].b) {
-          updatePausedOnInsertPause_r1(bool(true));
-          emit Pause(true);
-          return true;
-        }
       }
       return false;
   }

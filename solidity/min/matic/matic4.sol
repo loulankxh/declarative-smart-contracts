@@ -39,7 +39,6 @@ contract Matic {
   AllBurnTuple allBurn;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   PausedTuple paused;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event RenouncePauser(address p,bool b);
   event Mint(address p,uint amount);
@@ -192,8 +191,13 @@ contract Matic {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
   }
-  function updateAllMintOnInsertMint_r13(uint n) private    {
-      allMint.n += n;
+  function updateTotalSupplyOnIncrementAllBurn_r21(int b) private    {
+      // Empty()
+  }
+  function updateAllBurnOnInsertBurn_r33(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllBurn_r21(delta0);
+      allBurn.n += n;
   }
   function updateDecreaseAllowanceOnInsertRecv_decreaseAllowance_r14(address s,uint n) private   returns (bool) {
       address o = msg.sender;
@@ -204,6 +208,22 @@ contract Matic {
         return true;
       }
       return false;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      if(false==paused.b) {
+        uint m = balanceOf[o].n;
+        uint k = allowance[o][s].n;
+        if(m>=n && k>=n) {
+          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
+          updateTransferOnInsertTransferFrom_r0(o,r,n);
+          return true;
+        }
+      }
+      return false;
+  }
+  function updateTotalSupplyOnIncrementAllMint_r21(int m) private    {
+      // Empty()
   }
   function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
       updateTotalOutOnInsertTransfer_r26(o,n);
@@ -336,8 +356,10 @@ contract Matic {
       return true;
       return false;
   }
-  function updateAllBurnOnInsertBurn_r33(uint n) private    {
-      allBurn.n += n;
+  function updateAllMintOnInsertMint_r13(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r21(delta0);
+      allMint.n += n;
   }
   function updateAddPauserOnInsertRecv_addPauser_r25(address p) private   returns (bool) {
       address s = msg.sender;
@@ -355,20 +377,6 @@ contract Matic {
   function updateTotalMintOnInsertConstructor_r23(uint n) private    {
       address s = msg.sender;
       // Empty()
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(false==paused.b) {
-        uint m = balanceOf[o].n;
-        uint k = allowance[o][s].n;
-        if(m>=n && k>=n) {
-          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
-          updateTransferOnInsertTransferFrom_r0(o,r,n);
-          emit TransferFrom(o,r,s,n);
-          return true;
-        }
-      }
-      return false;
   }
   function updateTotalBurnOnInsertBurn_r18(address p,uint n) private    {
       int delta0 = int(n);
