@@ -28,12 +28,12 @@ contract CrowFunding {
     bool _valid;
   }
   TargetTuple target;
+  OwnerTuple owner;
   RaisedTuple raised;
   ClosedTuple closed;
   BeneficiaryTuple beneficiary;
   TotalBalanceTuple totalBalance;
   mapping(address=>BalanceOfTuple) balanceOf;
-  OwnerTuple owner;
   event Refund(address p,uint n);
   event Invest(address p,uint n);
   event Closed(bool b);

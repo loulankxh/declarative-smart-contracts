@@ -1,1 +1,1 @@
-approval,balanceOf,isApprovedForAll,latestTransfer,msgSender,now,owner,,approved,exists,ownerOf
+latestTransfer,balanceOf,approval,owner,isApprovedForAll,,ownerOf,exists,approved

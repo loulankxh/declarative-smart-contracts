@@ -5,7 +5,13 @@ import datalog.{Relation, Rule}
 case class EventHelper(rules: Set[Rule]) {
   private val relationsToEmit: Set[Relation] = {
     val txRules = rules.filter(isTransactionRule)
-    txRules.map(_.head.relation)
+    //txRules.map(_.head.relation)
+    var txHead = txRules.map(_.head.relation)
+    val txAsHeadRules = rules.filter(rule=>txHead.contains(rule.head.relation))
+    txAsHeadRules.foreach{rule =>
+      txHead = txHead.diff(rule.body.map(literal=>literal.relation))
+    }
+    txHead
   }
   def eventName(relation: Relation): String = relation.name.capitalize
   private def isTransactionRule(rule: Rule): Boolean = rule.body.exists(

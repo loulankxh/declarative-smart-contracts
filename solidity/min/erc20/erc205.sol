@@ -19,11 +19,11 @@ contract Erc20 {
     uint n;
     bool _valid;
   }
+  OwnerTuple owner;
   TotalSupplyTuple totalSupply;
   TotalBalancesTuple totalBalances;
   mapping(address=>BalanceOfTuple) balanceOf;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
-  OwnerTuple owner;
   event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);

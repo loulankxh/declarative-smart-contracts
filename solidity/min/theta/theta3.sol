@@ -43,12 +43,12 @@ contract Theta {
   mapping(address=>TotalOutTuple) totalOut;
   UnlockTimeTuple unlockTime;
   mapping(address=>TotalBurnTuple) totalBurn;
+  OwnerTuple owner;
   mapping(address=>TotalMintTuple) totalMint;
   mapping(address=>PrecirculatedTuple) precirculated;
   TotalSupplyTuple totalSupply;
-  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
-  OwnerTuple owner;
   TotalBalancesTuple totalBalances;
+  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   event AllowPrecirculation(address p,bool b);
   event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);

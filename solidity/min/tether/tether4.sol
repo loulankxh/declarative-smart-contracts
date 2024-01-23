@@ -68,6 +68,7 @@ contract Tether {
   }
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalIssueTuple) totalIssue;
+  OwnerTuple owner;
   AllIssueTuple allIssue;
   mapping(address=>IsBlackListedTuple) isBlackListed;
   TotalBalancesTuple totalBalances;
@@ -76,7 +77,6 @@ contract Tether {
   mapping(address=>TotalRedeemTuple) totalRedeem;
   mapping(address=>TotalInTuple) totalIn;
   TransferFromWithFeeTuple transferFromWithFee;
-  OwnerTuple owner;
   TransferWithFeeTuple transferWithFee;
   RateTuple rate;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;

@@ -31,11 +31,11 @@ contract Shib {
     uint m;
     bool _valid;
   }
+  OwnerTuple owner;
   mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
   AllMintTuple allMint;
   TotalBalancesTuple totalBalances;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
-  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   mapping(address=>mapping(address=>IncreaseAllowanceTotalTuple)) increaseAllowanceTotal;

@@ -7,12 +7,20 @@ contract Erc1155 {
     uint n;
     bool _valid;
   }
+  struct AllMintTuple {
+    uint n;
+    bool _valid;
+  }
   struct TotalOutTuple {
     uint n;
     bool _valid;
   }
   struct OwnerTuple {
     address p;
+    bool _valid;
+  }
+  struct AllBurnTuple {
+    uint n;
     bool _valid;
   }
   struct TotalInTuple {
@@ -35,20 +43,17 @@ contract Erc1155 {
     bool approval;
     bool _valid;
   }
-  struct TotalSupplyTuple {
-    uint n;
-    bool _valid;
-  }
   mapping(uint=>mapping(address=>TotalOutTuple)) totalOut;
   mapping(uint=>mapping(address=>mapping(address=>SpentTotalTuple))) spentTotal;
   mapping(uint=>mapping(address=>TotalInTuple)) totalIn;
   mapping(uint=>mapping(address=>TotalMintTuple)) totalMint;
   mapping(uint=>mapping(address=>TotalBurnTuple)) totalBurn;
+  mapping(address=>mapping(address=>IsApprovedForAllTuple)) isApprovedForAll;
+  mapping(uint=>AllMintTuple) allMint;
   OwnerTuple owner;
+  mapping(uint=>AllBurnTuple) allBurn;
   mapping(uint=>mapping(address=>mapping(address=>AllowanceTotalTuple))) allowanceTotal;
   mapping(uint=>TotalBalancesTuple) totalBalances;
-  mapping(address=>mapping(address=>IsApprovedForAllTuple)) isApprovedForAll;
-  mapping(uint=>TotalSupplyTuple) totalSupply;
   event Burn(uint tokenId,address p,uint amount);
   event SetApprovalForAll(address sender,address operator,bool approved);
   event Transfer(uint tokenId,address from,address to,uint amount);
@@ -75,7 +80,7 @@ contract Erc1155 {
       return n;
   }
   function getTotalSupply(uint tokenId) public view  returns (uint) {
-      uint n = totalSupply[tokenId].n;
+      uint n = totalSupply(tokenId);
       return n;
   }
   function getBalanceOf(uint tokenId,address p) public view  returns (uint) {
@@ -110,14 +115,8 @@ contract Erc1155 {
   function updateSpentTotalOnInsertTransferFrom_r19(uint t,address o,address s,uint n) private    {
       spentTotal[t][o][s].m += n;
   }
-  function updateTotalSupplyOnIncrementAllMint_r12(uint t,int m) private    {
-      int _delta = int(m);
-      uint newValue = updateuintByint(totalSupply[t].n,_delta);
-      totalSupply[t].n = newValue;
-  }
   function updateAllMintOnInsertMint_r16(uint t,uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllMint_r12(t,delta0);
+      allMint[t].n += n;
   }
   function updateTransferFromOnInsertRecv_transferFrom_r20(uint t,address o,address r,uint n) private   returns (bool) {
       address s = msg.sender;
@@ -131,9 +130,6 @@ contract Erc1155 {
       }
       return false;
   }
-  function updateTotalOutOnInsertTransfer_r14(uint t,address p,uint n) private    {
-      totalOut[t][p].n += n;
-  }
   function updateIncreaseAllowanceOnInsertRecv_approve_r1(uint t,address s,uint n) private   returns (bool) {
       address o = msg.sender;
       uint m = allowance(t,o,s);
@@ -142,10 +138,6 @@ contract Erc1155 {
       emit IncreaseAllowance(t,o,s,d);
       return true;
       return false;
-  }
-  function updateAllBurnOnInsertBurn_r5(uint t,uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllBurn_r12(t,delta0);
   }
   function updateTotalInOnInsertTransfer_r17(uint t,address p,uint n) private    {
       totalIn[t][p].n += n;
@@ -167,11 +159,6 @@ contract Erc1155 {
       updateTotalOutOnInsertTransfer_r14(t,o,n);
       emit Transfer(t,o,r,n);
   }
-  function updateTotalSupplyOnIncrementAllBurn_r12(uint t,int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply[t].n,_delta);
-      totalSupply[t].n = newValue;
-  }
   function allowance(uint t,address o,address s) private view  returns (uint) {
       uint l = spentTotal[t][o][s].m;
       uint m = allowanceTotal[t][o][s].m;
@@ -184,6 +171,15 @@ contract Erc1155 {
   }
   function updateTotalMintOnInsertMint_r15(uint t,address p,uint n) private    {
       totalMint[t][p].n += n;
+  }
+  function totalSupply(uint t) private view  returns (uint) {
+      uint b = allBurn[t].n;
+      uint m = allMint[t].n;
+      uint n = m-b;
+      return n;
+  }
+  function updateTotalOutOnInsertTransfer_r14(uint t,address p,uint n) private    {
+      totalOut[t][p].n += n;
   }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
@@ -217,6 +213,9 @@ contract Erc1155 {
         }
       }
       return false;
+  }
+  function updateAllBurnOnInsertBurn_r5(uint t,uint n) private    {
+      allBurn[t].n += n;
   }
   function updateTransferOnInsertRecv_transfer_r11(uint t,address r,uint n) private   returns (bool) {
       address s = msg.sender;

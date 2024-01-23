@@ -38,10 +38,10 @@ contract LtcSwapAsset {
   EffectiveTimeTuple effectiveTime;
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
+  TotalBalancesTuple totalBalances;
   NewOwnerTuple newOwner;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   OldOwnerTuple oldOwner;
-  TotalBalancesTuple totalBalances;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   event TransferFrom(address from,address to,address spender,uint amount);

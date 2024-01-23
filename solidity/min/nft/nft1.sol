@@ -10,6 +10,7 @@ contract Nft {
     bool _valid;
   }
   struct ApprovalTuple {
+    address p;
     bool b;
     bool _valid;
   }
@@ -21,11 +22,11 @@ contract Nft {
     uint n;
     bool _valid;
   }
+  OwnerTuple owner;
   mapping(uint=>LatestTransferTuple) latestTransfer;
-  mapping(address=>mapping(uint=>mapping(address=>ApprovalTuple))) approval;
+  mapping(address=>mapping(uint=>ApprovalTuple)) approval;
   mapping(address=>mapping(address=>IsApprovedForAllTuple)) isApprovedForAll;
   mapping(address=>BalanceOfTuple) balanceOf;
-  OwnerTuple owner;
   event Transfer(uint tokenId,address from,address to,uint time);
   event SetApprovedForAll(address owner,address operator,bool b);
   event SetApproval(address o,uint tokenId,address p,bool b);
@@ -89,9 +90,6 @@ contract Nft {
         revert("Rule condition failed");
       }
   }
-  function updateIsApprovedForAllOnInsertSetApprovedForAll_r3(address p,address o,bool b) private    {
-      isApprovedForAll[p][o] = IsApprovedForAllTuple(b,true);
-  }
   function updateTransferOnInsertRecv_mint_r1(uint tokenId,address to) private   returns (bool) {
       address s = msg.sender;
       uint time = block.timestamp;
@@ -140,9 +138,6 @@ contract Nft {
       uint convertedValue = uint(value);
       return convertedValue;
   }
-  function updateApprovalOnInsertSetApproval_r6(address o,uint tokenId,address p,bool b) private    {
-      approval[o][tokenId][p] = ApprovalTuple(b,true);
-  }
   function exists(uint tokenId) private view  returns (bool) {
       address to = latestTransfer[tokenId].to;
       if(to!=address(0)) {
@@ -166,6 +161,19 @@ contract Nft {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
   }
+  function updateApprovalOnInsertSetApproval_r6(address o,uint tokenId,address p,bool b) private    {
+      approval[o][tokenId] = ApprovalTuple(p,b,true);
+  }
+  function updateIsApprovedForAllOnInsertSetApprovedForAll_r3(address p,address o,bool b) private    {
+      isApprovedForAll[p][o] = IsApprovedForAllTuple(b,true);
+  }
+  function approved(uint tokenId,address p) private view  returns (bool) {
+      address o = ownerOf(tokenId);
+      if(p==approval[o][tokenId].p) {
+        bool b = approval[o][tokenId].b;
+        return b;
+      }
+  }
   function updateSetApprovedForAllOnInsertRecv_setApprovalForAll_r0(address o,bool b) private   returns (bool) {
       address p = msg.sender;
       updateIsApprovedForAllOnInsertSetApprovedForAll_r3(p,o,b);
@@ -178,11 +186,6 @@ contract Nft {
       if(p!=address(0)) {
         return p;
       }
-  }
-  function approved(uint tokenId,address p) private view  returns (bool) {
-      address o = ownerOf(tokenId);
-      bool b = approval[o][tokenId][p].b;
-      return b;
   }
   function updateLatestTransferOnInsertTransfer_r15(uint tokenId,address s,address r,uint t) private    {
       uint _max = latestTransfer[tokenId].time;

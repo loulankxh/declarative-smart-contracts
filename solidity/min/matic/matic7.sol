@@ -11,10 +11,6 @@ contract Matic {
     address p;
     bool _valid;
   }
-  struct DecreaseAllowanceTotalTuple {
-    uint m;
-    bool _valid;
-  }
   struct TotalMintTuple {
     uint n;
     bool _valid;
@@ -27,20 +23,16 @@ contract Matic {
     bool b;
     bool _valid;
   }
-  struct AllowanceTotalTuple {
-    uint m;
-    bool _valid;
-  }
-  struct SpentTotalTuple {
-    uint m;
-    bool _valid;
-  }
   struct TotalBurnTuple {
     uint n;
     bool _valid;
   }
   struct TotalBalancesTuple {
     uint m;
+    bool _valid;
+  }
+  struct AllowanceTuple {
+    uint n;
     bool _valid;
   }
   struct PausedTuple {
@@ -50,15 +42,13 @@ contract Matic {
   mapping(address=>TotalInTuple) totalIn;
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
-  mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
+  OwnerTuple owner;
   mapping(address=>TotalMintTuple) totalMint;
   TotalSupplyTuple totalSupply;
   mapping(address=>IsPauserTuple) isPauser;
-  mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   TotalBalancesTuple totalBalances;
-  mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
+  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   PausedTuple paused;
-  OwnerTuple owner;
   event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event RenouncePauser(address p,bool b);
@@ -107,6 +97,10 @@ contract Matic {
         revert("Rule condition failed");
       }
   }
+  function getAllowance(address p,address s) public view  returns (uint) {
+      uint n = allowance[p][s].n;
+      return n;
+  }
   function transferFrom(address from,address to,uint amount) public    {
       bool r2 = updateTransferFromOnInsertRecv_transferFrom_r2(from,to,amount);
       if(r2==false) {
@@ -115,10 +109,6 @@ contract Matic {
   }
   function getBalanceOf(address p) public view  returns (uint) {
       uint n = balanceOf(p);
-      return n;
-  }
-  function getAllowance(address p,address s) public view  returns (uint) {
-      uint n = allowance(p,s);
       return n;
   }
   function addPauser(address p) public    {
@@ -157,29 +147,6 @@ contract Matic {
         revert("Rule condition failed");
       }
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(false==paused.b) {
-        uint m = balanceOf(o);
-        uint k = allowance(o,s);
-        if(m>=n && k>=n) {
-          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
-          updateTransferOnInsertTransferFrom_r0(o,r,n);
-          emit TransferFrom(o,r,s,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updateRenouncePauserOnInsertRecv_renouncePauser_r3() private   returns (bool) {
-      address s = msg.sender;
-      if(true==isPauser[s].b) {
-        updateIsPauserOnInsertRenouncePauser_r34(s,bool(false));
-        emit RenouncePauser(s,false);
-        return true;
-      }
-      return false;
-  }
   function updateTotalSupplyOnIncrementAllMint_r21(int m) private    {
       int _delta = int(m);
       uint newValue = updateuintByint(totalSupply.n,_delta);
@@ -187,6 +154,21 @@ contract Matic {
   }
   function updateTotalInOnInsertTransfer_r11(address p,uint n) private    {
       totalIn[p].n += n;
+  }
+  function updateBurnOnInsertRecv_burn_r12(address p,uint n) private   returns (bool) {
+      address s = msg.sender;
+      if(false==paused.b) {
+        if(s==owner.p) {
+          uint m = balanceOf(p);
+          if(p!=address(0) && n<=m) {
+            updateAllBurnOnInsertBurn_r33(n);
+            updateTotalBurnOnInsertBurn_r18(p,n);
+            emit Burn(p,n);
+            return true;
+          }
+        }
+      }
+      return false;
   }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
@@ -197,6 +179,33 @@ contract Matic {
   function updateOwnerOnInsertConstructor_r9() private    {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
+  }
+  function updateTransferOnInsertRecv_transfer_r15(address r,uint n) private   returns (bool) {
+      if(false==paused.b) {
+        address s = msg.sender;
+        uint m = balanceOf(s);
+        if(n<=m) {
+          updateTotalInOnInsertTransfer_r11(r,n);
+          updateTotalOutOnInsertTransfer_r26(s,n);
+          emit Transfer(s,r,n);
+          return true;
+        }
+      }
+      return false;
+  }
+  function updateAllowanceOnIncrementSpentTotal_r32(address o,address s,int l) private    {
+      int _delta = int(-l);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
+  }
+  function updateAddPauserOnInsertRecv_addPauser_r25(address p) private   returns (bool) {
+      address s = msg.sender;
+      if(true==isPauser[s].b) {
+        updateIsPauserOnInsertAddPauser_r24(p,bool(true));
+        emit AddPauser(p,true);
+        return true;
+      }
+      return false;
   }
   function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
       updateTotalOutOnInsertTransfer_r26(o,n);
@@ -223,16 +232,45 @@ contract Matic {
   function updatePausedOnInsertUnpause_r10(bool b) private    {
       paused = PausedTuple(b,true);
   }
-  function updateIsPauserOnInsertConstructor_r7() private    {
-      address s = msg.sender;
-      isPauser[s] = IsPauserTuple(true,true);
-  }
   function updateAllMintOnInsertMint_r13(uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllMint_r21(delta0);
   }
-  function updateAllowanceTotalOnInsertIncreaseAllowance_r37(address o,address s,uint n) private    {
-      allowanceTotal[o][s].m += n;
+  function updateIsPauserOnInsertConstructor_r7() private    {
+      address s = msg.sender;
+      isPauser[s] = IsPauserTuple(true,true);
+  }
+  function updateIncreaseAllowanceOnInsertRecv_approve_r35(address s,uint n) private   returns (bool) {
+      address o = msg.sender;
+      uint m = allowance[o][s].n;
+      uint d = n-m;
+      updateAllowanceTotalOnInsertIncreaseAllowance_r37(o,s,d);
+      emit IncreaseAllowance(o,s,d);
+      return true;
+      return false;
+  }
+  function updateRenouncePauserOnInsertRecv_renouncePauser_r3() private   returns (bool) {
+      address s = msg.sender;
+      if(true==isPauser[s].b) {
+        updateIsPauserOnInsertRenouncePauser_r34(s,bool(false));
+        emit RenouncePauser(s,false);
+        return true;
+      }
+      return false;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r2(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      if(false==paused.b) {
+        uint k = allowance[o][s].n;
+        uint m = balanceOf(o);
+        if(m>=n && k>=n) {
+          updateSpentTotalOnInsertTransferFrom_r30(o,s,n);
+          updateTransferOnInsertTransferFrom_r0(o,r,n);
+          emit TransferFrom(o,r,s,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updatePausedOnInsertPause_r1(bool b) private    {
       paused = PausedTuple(b,true);
@@ -240,6 +278,15 @@ contract Matic {
   function updateTotalMintOnInsertConstructor_r23(uint n) private    {
       address s = msg.sender;
       totalMint[s] = TotalMintTuple(n,true);
+  }
+  function updateSpentTotalOnInsertTransferFrom_r30(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementSpentTotal_r32(o,s,delta0);
+  }
+  function updateAllowanceOnIncrementDecreaseAllowanceTotal_r32(address o,address s,int d) private    {
+      int _delta = int(-d);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
   function updateTotalBurnOnInsertBurn_r18(address p,uint n) private    {
       totalBurn[p].n += n;
@@ -258,28 +305,6 @@ contract Matic {
       }
       return false;
   }
-  function allowance(address o,address s) private view  returns (uint) {
-      uint d = decreaseAllowanceTotal[o][s].m;
-      uint l = spentTotal[o][s].m;
-      uint m = allowanceTotal[o][s].m;
-      uint n = (m-l)-d;
-      return n;
-  }
-  function updateBurnOnInsertRecv_burn_r12(address p,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(false==paused.b) {
-        if(s==owner.p) {
-          uint m = balanceOf(p);
-          if(p!=address(0) && n<=m) {
-            updateAllBurnOnInsertBurn_r33(n);
-            updateTotalBurnOnInsertBurn_r18(p,n);
-            emit Burn(p,n);
-            return true;
-          }
-        }
-      }
-      return false;
-  }
   function updateIsPauserOnInsertAddPauser_r24(address p,bool b) private    {
       isPauser[p] = IsPauserTuple(b,true);
   }
@@ -291,34 +316,16 @@ contract Matic {
       uint s = ((n+i)-m)-o;
       return s;
   }
+  function updateAllowanceOnIncrementAllowanceTotal_r32(address o,address s,int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
+  }
   function updateTotalSupplyOnInsertConstructor_r31(uint n) private    {
       totalSupply = TotalSupplyTuple(n,true);
   }
   function updateIsPauserOnInsertRenouncePauser_r34(address p,bool b) private    {
       isPauser[p] = IsPauserTuple(b,true);
-  }
-  function updateDecreaseAllowanceOnInsertRecv_decreaseAllowance_r14(address s,uint n) private   returns (bool) {
-      address o = msg.sender;
-      uint m = allowance(o,s);
-      if(m>=n) {
-        updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(o,s,n);
-        emit DecreaseAllowance(o,s,n);
-        return true;
-      }
-      return false;
-  }
-  function updateTransferOnInsertRecv_transfer_r15(address r,uint n) private   returns (bool) {
-      if(false==paused.b) {
-        address s = msg.sender;
-        uint m = balanceOf(s);
-        if(n<=m) {
-          updateTotalInOnInsertTransfer_r11(r,n);
-          updateTotalOutOnInsertTransfer_r26(s,n);
-          emit Transfer(s,r,n);
-          return true;
-        }
-      }
-      return false;
   }
   function updateTotalMintOnInsertMint_r19(address p,uint n) private    {
       totalMint[p].n += n;
@@ -327,14 +334,13 @@ contract Matic {
       address s = msg.sender;
       // Empty()
   }
-  function updateIncreaseAllowanceOnInsertRecv_approve_r35(address s,uint n) private   returns (bool) {
-      address o = msg.sender;
-      uint m = allowance(o,s);
-      uint d = n-m;
-      updateAllowanceTotalOnInsertIncreaseAllowance_r37(o,s,d);
-      emit IncreaseAllowance(o,s,d);
-      return true;
-      return false;
+  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementDecreaseAllowanceTotal_r32(o,s,delta0);
+  }
+  function updateAllowanceTotalOnInsertIncreaseAllowance_r37(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementAllowanceTotal_r32(o,s,delta0);
   }
   function updateAllBurnOnInsertBurn_r33(uint n) private    {
       int delta0 = int(n);
@@ -344,6 +350,16 @@ contract Matic {
       int _delta = int(-b);
       uint newValue = updateuintByint(totalSupply.n,_delta);
       totalSupply.n = newValue;
+  }
+  function updateDecreaseAllowanceOnInsertRecv_decreaseAllowance_r14(address s,uint n) private   returns (bool) {
+      address o = msg.sender;
+      uint m = allowance[o][s].n;
+      if(m>=n) {
+        updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(o,s,n);
+        emit DecreaseAllowance(o,s,n);
+        return true;
+      }
+      return false;
   }
   function updateTotalBalancesOnInsertConstructor_r36(uint n) private    {
       totalBalances = TotalBalancesTuple(n,true);
@@ -355,23 +371,8 @@ contract Matic {
       return true;
       return false;
   }
-  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(address o,address s,uint n) private    {
-      decreaseAllowanceTotal[o][s].m += n;
-  }
-  function updateAddPauserOnInsertRecv_addPauser_r25(address p) private   returns (bool) {
-      address s = msg.sender;
-      if(true==isPauser[s].b) {
-        updateIsPauserOnInsertAddPauser_r24(p,bool(true));
-        emit AddPauser(p,true);
-        return true;
-      }
-      return false;
-  }
   function updateTotalOutOnInsertTransfer_r26(address p,uint n) private    {
       totalOut[p].n += n;
-  }
-  function updateSpentTotalOnInsertTransferFrom_r30(address o,address s,uint n) private    {
-      spentTotal[o][s].m += n;
   }
   function updatePauseOnInsertRecv_pause_r20() private   returns (bool) {
       if(false==paused.b) {

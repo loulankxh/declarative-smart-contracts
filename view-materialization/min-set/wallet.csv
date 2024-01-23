@@ -1,4 +1,4 @@
-msgSender,owner,totalIn,totalOut,totalSupply,,balanceOf
-allBurn,allMint,msgSender,owner,totalIn,totalOut,,totalSupply,balanceOf
-allBurn,allMint,balanceOf,msgSender,owner,,totalSupply
-balanceOf,msgSender,owner,totalSupply,
+allBurn,owner,balanceOf,allMint,,totalSupply
+allBurn,totalOut,allMint,owner,totalIn,,totalSupply,balanceOf
+totalSupply,owner,totalOut,totalIn,,balanceOf
+totalSupply,owner,balanceOf,

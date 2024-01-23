@@ -1,10 +1,22 @@
 contract Linktoken {
+  struct TotalInTuple {
+    uint n;
+    bool _valid;
+  }
+  struct TotalOutTuple {
+    uint n;
+    bool _valid;
+  }
   struct OwnerTuple {
     address p;
     bool _valid;
   }
   struct DecreaseAllowanceTotalTuple {
     uint m;
+    bool _valid;
+  }
+  struct TotalMintTuple {
+    uint n;
     bool _valid;
   }
   struct TotalSupplyTuple {
@@ -19,20 +31,23 @@ contract Linktoken {
     uint m;
     bool _valid;
   }
+  struct TotalBurnTuple {
+    uint n;
+    bool _valid;
+  }
   struct TotalBalancesTuple {
     uint m;
     bool _valid;
   }
-  struct BalanceOfTuple {
-    uint n;
-    bool _valid;
-  }
+  mapping(address=>TotalInTuple) totalIn;
+  mapping(address=>TotalOutTuple) totalOut;
+  mapping(address=>TotalBurnTuple) totalBurn;
   mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
+  mapping(address=>TotalMintTuple) totalMint;
   TotalSupplyTuple totalSupply;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   TotalBalancesTuple totalBalances;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
-  mapping(address=>BalanceOfTuple) balanceOf;
   OwnerTuple owner;
   event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
@@ -82,15 +97,15 @@ contract Linktoken {
         revert("Rule condition failed");
       }
   }
-  function getBalanceOf(address p) public view  returns (uint) {
-      uint n = balanceOf[p].n;
-      return n;
-  }
   function transferFrom(address from,address to,uint amount) public    {
       bool r11 = updateTransferFromOnInsertRecv_transferFrom_r11(from,to,amount);
       if(r11==false) {
         revert("Rule condition failed");
       }
+  }
+  function getBalanceOf(address p) public view  returns (uint) {
+      uint n = balanceOf(p);
+      return n;
   }
   function getAllowance(address p,address s) public view  returns (uint) {
       uint n = allowance(p,s);
@@ -102,27 +117,9 @@ contract Linktoken {
         revert("Rule condition failed");
       }
   }
-  function updateBurnOnInsertRecv_burn_r3(address p,uint n) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        uint m = balanceOf[p].n;
-        if(p!=address(0) && n<=m) {
-          updateTotalBurnOnInsertBurn_r15(p,n);
-          updateAllBurnOnInsertBurn_r25(n);
-          emit Burn(p,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updateBalanceOfOnIncrementTotalIn_r4(address p,int i) private    {
-      int _delta = int(i);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
-  }
   function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
       address s = msg.sender;
-      uint m = balanceOf[o].n;
+      uint m = balanceOf(o);
       uint k = allowance(o,s);
       if(m>=n && k>=n && validRecipient(r)) {
         updateTransferOnInsertTransferFrom_r14(o,r,n);
@@ -132,21 +129,25 @@ contract Linktoken {
       }
       return false;
   }
-  function updateTotalOutOnInsertTransfer_r20(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalOut_r4(p,delta0);
-  }
-  function updateTotalInOnInsertConstructor_r13(uint n) private    {
-      address s = msg.sender;
+  function updateBalanceOfOnInsertConstructor_r5(uint n) private    {
+      address p = msg.sender;
       // Empty()
   }
-  function updateTotalSupplyOnIncrementAllMint_r17(int m) private    {
-      int _delta = int(m);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r6(address o,address s,uint n) private    {
+      decreaseAllowanceTotal[o][s].m += n;
+  }
+  function updateTotalMintOnInsertConstructor_r19(uint n) private    {
+      address s = msg.sender;
+      totalMint[s] = TotalMintTuple(n,true);
   }
   function updateSpentTotalOnInsertTransferFrom_r22(address o,address s,uint n) private    {
       spentTotal[o][s].m += n;
+  }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
   }
   function updateTotalSupplyOnInsertConstructor_r23(uint n) private    {
       totalSupply = TotalSupplyTuple(n,true);
@@ -154,30 +155,31 @@ contract Linktoken {
   function updateTotalBalancesOnInsertConstructor_r27(uint n) private    {
       totalBalances = TotalBalancesTuple(n,true);
   }
-  function updateTotalInOnInsertTransfer_r10(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalIn_r4(p,delta0);
+  function updateTotalInOnInsertConstructor_r13(uint n) private    {
+      address s = msg.sender;
+      totalIn[s] = TotalInTuple(n,true);
+  }
+  function updateTransferOnInsertRecv_transfer_r2(address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf(s);
+      if(n<=m && validRecipient(r)) {
+        updateTotalOutOnInsertTransfer_r20(s,n);
+        updateTotalInOnInsertTransfer_r10(r,n);
+        emit Transfer(s,r,n);
+        return true;
+      }
+      return false;
   }
   function updateTransferOnInsertTransferFrom_r14(address o,address r,uint n) private    {
       updateTotalOutOnInsertTransfer_r20(o,n);
       updateTotalInOnInsertTransfer_r10(r,n);
       emit Transfer(o,r,n);
   }
-  function updateBalanceOfOnInsertConstructor_r5(uint n) private    {
-      address p = msg.sender;
-      balanceOf[p] = BalanceOfTuple(n,true);
-  }
   function updateAllowanceTotalOnInsertIncreaseAllowance_r28(address o,address s,uint n) private    {
       allowanceTotal[o][s].m += n;
   }
   function updateTotalMintOnInsertMint_r16(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalMint_r4(p,delta0);
-  }
-  function updateBalanceOfOnIncrementTotalOut_r4(address p,int o) private    {
-      int _delta = int(-o);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
+      totalMint[p].n += n;
   }
   function updateIncreaseAllowanceOnInsertRecv_increaseApproval_r12(address s,uint n) private   returns (bool) {
       address o = msg.sender;
@@ -197,11 +199,10 @@ contract Linktoken {
       updateTotalSupplyOnIncrementAllBurn_r17(delta0);
   }
   function updateTotalBurnOnInsertBurn_r15(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalBurn_r4(p,delta0);
+      totalBurn[p].n += n;
   }
-  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r6(address o,address s,uint n) private    {
-      decreaseAllowanceTotal[o][s].m += n;
+  function updateTotalOutOnInsertTransfer_r20(address p,uint n) private    {
+      totalOut[p].n += n;
   }
   function allowance(address o,address s) private view  returns (uint) {
       uint d = decreaseAllowanceTotal[o][s].m;
@@ -222,16 +223,21 @@ contract Linktoken {
       }
       return false;
   }
-  function updateBalanceOfOnIncrementTotalMint_r4(address p,int n) private    {
-      int _delta = int(n);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
+  function updateTotalInOnInsertTransfer_r10(address p,uint n) private    {
+      totalIn[p].n += n;
   }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
+  function balanceOf(address p) private view  returns (uint) {
+      uint i = totalIn[p].n;
+      uint o = totalOut[p].n;
+      uint m = totalBurn[p].n;
+      uint n = totalMint[p].n;
+      uint s = ((n+i)-m)-o;
+      return s;
+  }
+  function updateTotalSupplyOnIncrementAllMint_r17(int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
   }
   function updateMintOnInsertRecv_mint_r9(address p,uint n) private   returns (bool) {
       address s = owner.p;
@@ -266,28 +272,21 @@ contract Linktoken {
       }
       return false;
   }
-  function updateBalanceOfOnIncrementTotalBurn_r4(address p,int m) private    {
-      int _delta = int(-m);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
-  }
-  function updateTransferOnInsertRecv_transfer_r2(address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf[s].n;
-      if(n<=m && validRecipient(r)) {
-        updateTotalOutOnInsertTransfer_r20(s,n);
-        updateTotalInOnInsertTransfer_r10(r,n);
-        emit Transfer(s,r,n);
-        return true;
-      }
-      return false;
-  }
-  function updateTotalMintOnInsertConstructor_r19(uint n) private    {
-      address s = msg.sender;
-      // Empty()
-  }
   function updateAllMintOnInsertMint_r0(uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllMint_r17(delta0);
+  }
+  function updateBurnOnInsertRecv_burn_r3(address p,uint n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        uint m = balanceOf(p);
+        if(p!=address(0) && n<=m) {
+          updateTotalBurnOnInsertBurn_r15(p,n);
+          updateAllBurnOnInsertBurn_r25(n);
+          emit Burn(p,n);
+          return true;
+        }
+      }
+      return false;
   }
 }

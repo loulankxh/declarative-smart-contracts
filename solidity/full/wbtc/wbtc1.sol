@@ -62,7 +62,6 @@ contract Wbtc {
   mapping(address=>TotalInTuple) totalIn;
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
-  OwnerTuple owner;
   PendingOwnerTuple pendingOwner;
   mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
   mapping(address=>TotalMintTuple) totalMint;
@@ -70,6 +69,7 @@ contract Wbtc {
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
+  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;

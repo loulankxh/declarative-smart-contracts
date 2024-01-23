@@ -54,7 +54,6 @@ contract Linktoken {
   mapping(address=>TotalInTuple) totalIn;
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
-  OwnerTuple owner;
   mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
   mapping(address=>TotalMintTuple) totalMint;
   TotalSupplyTuple totalSupply;
@@ -62,6 +61,7 @@ contract Linktoken {
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   event TransferFrom(address from,address to,address spender,uint amount);

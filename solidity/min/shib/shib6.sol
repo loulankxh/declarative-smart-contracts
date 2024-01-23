@@ -3,7 +3,7 @@ contract Shib {
     address p;
     bool _valid;
   }
-  struct TotalSupplyTuple {
+  struct AllMintTuple {
     uint n;
     bool _valid;
   }
@@ -19,11 +19,16 @@ contract Shib {
     uint n;
     bool _valid;
   }
-  TotalSupplyTuple totalSupply;
-  TotalBalancesTuple totalBalances;
-  mapping(address=>BalanceOfTuple) balanceOf;
-  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  struct AllBurnTuple {
+    uint n;
+    bool _valid;
+  }
   OwnerTuple owner;
+  AllMintTuple allMint;
+  TotalBalancesTuple totalBalances;
+  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  mapping(address=>BalanceOfTuple) balanceOf;
+  AllBurnTuple allBurn;
   event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
@@ -39,7 +44,7 @@ contract Shib {
     updateTotalBalancesOnInsertConstructor_r28(totalSupply);
   }
   function getTotalSupply() public view  returns (uint) {
-      uint n = totalSupply.n;
+      uint n = totalSupply();
       return n;
   }
   function getAllowance(address p,address s) public view  returns (uint) {
@@ -102,6 +107,12 @@ contract Shib {
       }
       return false;
   }
+  function totalSupply() private view  returns (uint) {
+      uint b = allBurn.n;
+      uint m = allMint.n;
+      uint n = m-b;
+      return n;
+  }
   function updateTotalBurnOnInsertBurn_r16(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalBurn_r7(p,delta0);
@@ -122,20 +133,23 @@ contract Shib {
       uint newValue = updateuintByint(allowance[o][s].n,_delta);
       allowance[o][s].n = newValue;
   }
-  function updateTotalSupplyOnIncrementAllBurn_r17(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+  function updateTotalSupplyOnInsertConstructor_r4(uint n) private    {
+      // Empty()
   }
   function updateTotalOutOnInsertTransfer_r22(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalOut_r7(p,delta0);
   }
-  function updateTotalSupplyOnInsertConstructor_r4(uint n) private    {
-      totalSupply = TotalSupplyTuple(n,true);
+  function updateAllBurnOnInsertBurn_r27(uint n) private    {
+      allBurn.n += n;
   }
   function updateBalanceOfOnIncrementTotalBurn_r7(address p,int m) private    {
       int _delta = int(-m);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
+  }
+  function updateBalanceOfOnIncrementTotalIn_r7(address p,int i) private    {
+      int _delta = int(i);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
   }
@@ -238,14 +252,5 @@ contract Shib {
   function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r8(address o,address s,uint n) private    {
       int delta0 = int(n);
       updateAllowanceOnIncrementDecreaseAllowanceTotal_r1(o,s,delta0);
-  }
-  function updateBalanceOfOnIncrementTotalIn_r7(address p,int i) private    {
-      int _delta = int(i);
-      uint newValue = updateuintByint(balanceOf[p].n,_delta);
-      balanceOf[p].n = newValue;
-  }
-  function updateAllBurnOnInsertBurn_r27(uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllBurn_r17(delta0);
   }
 }
