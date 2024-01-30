@@ -27,7 +27,7 @@ object Main extends App {
     "bnb.dl",
     "matic.dl",
     "ltcSwapAsset.dl",
-    "theta.dl",
+    // "theta.dl",
     "wbtc.dl",
     "shib.dl",
     "linktoken.dl",

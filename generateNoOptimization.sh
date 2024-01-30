@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dlDir="./benchmarks"
-planDir="./view-materialization/full-set"
+planDir="./view-materialization/fullNoArithmetic"
 outDir="./solidity/noOptimization"
 
 for file in "$dlDir"/*.dl; do

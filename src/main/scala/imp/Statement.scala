@@ -202,8 +202,6 @@ object ReadTuple {
   def apply(relation: Relation, keyList: List[Parameter]): ReadTuple = {
     // val tupleName: String = s"${relation.name}Tuple"
     val tupleName: String = DataStructureHelper.relationalTupleName(relation)
-    println("keyList")
-    println(keyList.toString())
     ReadTuple(relation, keyList, tupleName)
   }
 }

@@ -1,8 +1,8 @@
-pendingOwner,decreaseAllowanceTotal,totalMint,totalBurn,this,totalBalances,allowanceTotal,totalOut,totalSupply,paused,owner,totalIn,spentTotal,,balanceOf,allowance
-pendingOwner,decreaseAllowanceTotal,allBurn,this,totalBalances,allowanceTotal,balanceOf,paused,owner,allMint,spentTotal,,totalSupply,allowance
-pendingOwner,totalMint,totalBurn,allowance,this,totalBalances,totalOut,totalSupply,paused,owner,totalIn,,balanceOf
-pendingOwner,totalIn,totalMint,totalBurn,allowance,allBurn,this,totalBalances,totalOut,paused,owner,allMint,,totalSupply,balanceOf
-pendingOwner,allowance,this,totalBalances,totalSupply,balanceOf,paused,owner,
-pendingOwner,allowance,this,allBurn,totalBalances,balanceOf,paused,owner,allMint,,totalSupply
-pendingOwner,decreaseAllowanceTotal,this,totalBalances,allowanceTotal,totalSupply,balanceOf,paused,owner,spentTotal,,allowance
-pendingOwner,decreaseAllowanceTotal,totalIn,totalBurn,totalMint,allBurn,this,totalBalances,allowanceTotal,totalOut,paused,owner,allMint,spentTotal,,totalSupply,balanceOf,allowance
+totalMint,pendingOwner,totalIn,paused,totalSupply,owner,decreaseAllowanceTotal,totalBalances,totalOut,totalBurn,this,spentTotal,allowanceTotal,,balanceOf,allowance
+allBurn,pendingOwner,allowance,paused,allMint,owner,this,totalBalances,balanceOf,,totalSupply
+pendingOwner,allowance,paused,totalSupply,owner,this,totalBalances,balanceOf,
+totalMint,allBurn,pendingOwner,totalIn,paused,allMint,owner,decreaseAllowanceTotal,totalBalances,totalOut,totalBurn,this,spentTotal,allowanceTotal,,totalSupply,balanceOf,allowance
+totalMint,pendingOwner,allowance,paused,totalIn,totalSupply,owner,totalOut,totalBurn,this,totalBalances,,balanceOf
+pendingOwner,allowanceTotal,paused,totalSupply,owner,decreaseAllowanceTotal,this,spentTotal,totalBalances,balanceOf,,allowance
+allBurn,pendingOwner,paused,allMint,owner,decreaseAllowanceTotal,totalBalances,this,spentTotal,allowanceTotal,balanceOf,,totalSupply,allowance
+totalMint,allBurn,allowance,pendingOwner,paused,totalIn,allMint,owner,totalOut,totalBurn,this,totalBalances,,balanceOf,totalSupply

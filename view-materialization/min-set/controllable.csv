@@ -1,8 +1,8 @@
-decimals,allowance,allBurn,totalBalances,balanceOf,name,symbol,controller,allMint,,totalSupply
-decreaseAllowanceTotal,decimals,allBurn,totalBalances,increaseAllowanceTotal,balanceOf,name,symbol,controller,allMint,spentTotal,,totalSupply,allowance
-totalMint,decimals,totalBurn,allowance,totalBalances,totalOut,totalSupply,symbol,name,controller,totalIn,,balanceOf
-totalIn,totalMint,decimals,totalBurn,allowance,allBurn,totalBalances,totalOut,symbol,name,controller,allMint,,totalSupply,balanceOf
-decreaseAllowanceTotal,decimals,totalBalances,increaseAllowanceTotal,totalSupply,balanceOf,name,symbol,controller,spentTotal,,allowance
-decimals,allowance,totalBalances,totalSupply,balanceOf,name,symbol,controller,
-decreaseAllowanceTotal,totalMint,decimals,totalBurn,totalBalances,increaseAllowanceTotal,totalOut,totalSupply,symbol,name,controller,totalIn,spentTotal,,balanceOf,allowance
-decreaseAllowanceTotal,totalIn,decimals,totalBurn,totalMint,allBurn,totalBalances,increaseAllowanceTotal,totalOut,symbol,name,controller,allMint,spentTotal,,totalSupply,balanceOf,allowance
+name,controller,totalSupply,decimals,decreaseAllowanceTotal,symbol,increaseAllowanceTotal,spentTotal,totalBalances,balanceOf,,allowance
+name,allBurn,allowance,controller,allMint,decimals,symbol,totalBalances,balanceOf,,totalSupply
+name,totalMint,allBurn,allowance,totalIn,controller,allMint,decimals,totalBalances,totalOut,totalBurn,symbol,,balanceOf,totalSupply
+name,totalMint,allowance,totalIn,controller,totalSupply,decimals,totalBalances,totalOut,totalBurn,symbol,,balanceOf
+name,allBurn,controller,allMint,decimals,totalBalances,decreaseAllowanceTotal,increaseAllowanceTotal,spentTotal,symbol,balanceOf,,totalSupply,allowance
+name,totalBurn,totalMint,totalIn,controller,totalSupply,decimals,totalBalances,decreaseAllowanceTotal,totalOut,increaseAllowanceTotal,spentTotal,symbol,,balanceOf,allowance
+name,allowance,controller,totalSupply,decimals,symbol,totalBalances,balanceOf,
+name,totalBurn,totalMint,allBurn,totalIn,controller,allMint,decimals,totalBalances,decreaseAllowanceTotal,totalOut,increaseAllowanceTotal,spentTotal,symbol,,totalSupply,balanceOf,allowance

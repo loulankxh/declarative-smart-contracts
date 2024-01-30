@@ -27,10 +27,6 @@ contract Erc777 {
     bool b;
     bool _valid;
   }
-  struct OwnerTuple {
-    address p;
-    bool _valid;
-  }
   struct OperatorsTuple {
     bool b;
     bool _valid;
@@ -62,14 +58,13 @@ contract Erc777 {
   mapping(address=>TotalInTuple) totalIn;
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
+  mapping(address=>DefaultOperatorTuple) defaultOperator;
   mapping(address=>TotalMintTuple) totalMint;
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>mapping(address=>RevokedDefaultOperatorTuple)) revokedDefaultOperator;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
-  mapping(address=>DefaultOperatorTuple) defaultOperator;
-  OwnerTuple owner;
   mapping(address=>mapping(address=>OperatorsTuple)) operators;
   TotalSupplyTuple totalSupply;
   mapping(address=>BalanceOfTuple) balanceOf;
@@ -180,6 +175,10 @@ contract Erc777 {
       int _delta = int(n);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
+  }
+  function updateOwnerOnInsertConstructor_r20() private    {
+      address s = msg.sender;
+      // Empty()
   }
   function updateAllowanceOnIncrementSpentTotal_r15(address o,address s,int l) private    {
       int _delta = int(-l);
@@ -352,10 +351,6 @@ contract Erc777 {
         }
       }
       return false;
-  }
-  function updateOwnerOnInsertConstructor_r20() private    {
-      address s = msg.sender;
-      owner = OwnerTuple(s,true);
   }
   function updateBalanceOfOnIncrementTotalOut_r13(address p,int o) private    {
       int _delta = int(-o);

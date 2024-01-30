@@ -1,8 +1,8 @@
-decreaseAllowanceTotal,totalBalances,increaseAllowanceTotal,totalSupply,balanceOf,owner,spentTotal,,allowance
-totalMint,totalBurn,allowance,allBurn,totalBalances,totalOut,allMint,owner,totalIn,,totalSupply,balanceOf
-totalMint,totalBurn,allowance,totalBalances,totalOut,totalSupply,owner,totalIn,,balanceOf
-decreaseAllowanceTotal,allBurn,totalBalances,increaseAllowanceTotal,balanceOf,owner,allMint,spentTotal,,totalSupply,allowance
-allowance,allBurn,totalBalances,balanceOf,owner,allMint,,totalSupply
-decreaseAllowanceTotal,totalIn,totalBurn,totalMint,allBurn,totalBalances,increaseAllowanceTotal,totalOut,owner,allMint,spentTotal,,totalSupply,balanceOf,allowance
-decreaseAllowanceTotal,totalMint,totalBurn,totalBalances,increaseAllowanceTotal,totalOut,totalSupply,owner,totalIn,spentTotal,,balanceOf,allowance
-allowance,totalBalances,totalSupply,balanceOf,owner,
+totalMint,totalIn,allowance,totalSupply,owner,totalOut,totalBurn,totalBalances,,balanceOf
+allowance,totalSupply,owner,totalBalances,balanceOf,
+totalMint,totalIn,increaseAllowanceTotal,totalSupply,owner,decreaseAllowanceTotal,totalOut,totalBurn,spentTotal,totalBalances,,balanceOf,allowance
+allBurn,allMint,owner,decreaseAllowanceTotal,increaseAllowanceTotal,spentTotal,totalBalances,balanceOf,,totalSupply,allowance
+totalBurn,totalMint,allBurn,totalIn,allMint,owner,decreaseAllowanceTotal,totalOut,increaseAllowanceTotal,spentTotal,totalBalances,,totalSupply,balanceOf,allowance
+totalSupply,owner,decreaseAllowanceTotal,increaseAllowanceTotal,spentTotal,totalBalances,balanceOf,,allowance
+allBurn,allowance,allMint,owner,totalBalances,balanceOf,,totalSupply
+totalMint,allBurn,totalIn,allowance,allMint,owner,totalOut,totalBurn,totalBalances,,balanceOf,totalSupply
