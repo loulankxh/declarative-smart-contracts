@@ -1,8 +1,4 @@
 contract Controllable {
-  struct AllMintTuple {
-    uint n;
-    bool _valid;
-  }
   struct SymbolTuple {
     uint n;
     bool _valid;
@@ -19,6 +15,10 @@ contract Controllable {
     uint n;
     bool _valid;
   }
+  struct TotalSupplyTuple {
+    uint n;
+    bool _valid;
+  }
   struct TotalBalancesTuple {
     uint m;
     bool _valid;
@@ -31,26 +31,18 @@ contract Controllable {
     uint n;
     bool _valid;
   }
-  struct AllBurnTuple {
-    uint n;
-    bool _valid;
-  }
   ControllerTuple controller;
-  NameTuple name;
-  AllMintTuple allMint;
   TotalBalancesTuple totalBalances;
   SymbolTuple symbol;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  NameTuple name;
+  TotalSupplyTuple totalSupply;
   DecimalsTuple decimals;
   mapping(address=>BalanceOfTuple) balanceOf;
-  AllBurnTuple allBurn;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event IncreaseAllowance(address owner,address spender,uint n);
   event Mint(address p,uint amount);
-  event ControllerRedeem(address p,uint amount);
   event DecreaseAllowance(address owner,address spender,uint n);
-  event ControllerTransfer(address from,address to,uint amount);
   event Transfer(address from,address to,uint amount);
   constructor(address p) public {
     updateNameOnInsertConstructor_r10();
@@ -77,13 +69,6 @@ contract Controllable {
         revert("Rule condition failed");
       }
   }
-  function approve(address s,uint n) public    {
-      bool r2 = updateDecreaseAllowanceOnInsertRecv_approve_r2(s,n);
-      bool r20 = updateIncreaseAllowanceOnInsertRecv_approve_r20(s,n);
-      if(r2==false && r20==false) {
-        revert("Rule condition failed");
-      }
-  }
   function getAllowance(address p,address s) public view  returns (uint) {
       uint n = allowance[p][s].n;
       return n;
@@ -100,10 +85,6 @@ contract Controllable {
       uint n = name.n;
       return n;
   }
-  function getTotalSupply() public view  returns (uint) {
-      uint n = totalSupply();
-      return n;
-  }
   function mint(address p,uint amount) public    {
       bool r16 = updateMintOnInsertRecv_mint_r16(p,amount);
       if(r16==false) {
@@ -113,6 +94,17 @@ contract Controllable {
   function increaseAllowance(address spender,uint n) public    {
       bool r22 = updateIncreaseAllowanceOnInsertRecv_increaseAllowance_r22(spender,n);
       if(r22==false) {
+        revert("Rule condition failed");
+      }
+  }
+  function getTotalSupply() public view  returns (uint) {
+      uint n = totalSupply.n;
+      return n;
+  }
+  function approve(address s,uint n) public    {
+      bool r2 = updateDecreaseAllowanceOnInsertRecv_approve_r2(s,n);
+      bool r20 = updateIncreaseAllowanceOnInsertRecv_approve_r20(s,n);
+      if(r2==false && r20==false) {
         revert("Rule condition failed");
       }
   }
@@ -159,17 +151,15 @@ contract Controllable {
       }
       return false;
   }
-  function updateControllerRedeemOnInsertRecv_controllerRedeem_r6(address p,uint n) private   returns (bool) {
-      address c = controller.p;
-      if(c==msg.sender) {
-        uint m = balanceOf[p].n;
-        if(p!=address(0) && n<=m) {
-          updateBurnOnInsertControllerRedeem_r27(p,n);
-          emit ControllerRedeem(p,n);
-          return true;
-        }
-      }
-      return false;
+  function updateTotalSupplyOnIncrementAllMint_r23(int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
+  }
+  function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
+      updateTotalInOnInsertTransfer_r11(r,n);
+      updateTotalOutOnInsertTransfer_r25(o,n);
+      emit Transfer(o,r,n);
   }
   function updateTransferFromOnInsertRecv_transferFrom_r32(address o,address r,uint n) private   returns (bool) {
       address s = msg.sender;
@@ -178,7 +168,6 @@ contract Controllable {
       if(m>=n && k>=n) {
         updateSpentTotalOnInsertTransferFrom_r8(o,s,n);
         updateTransferOnInsertTransferFrom_r0(o,r,n);
-        emit TransferFrom(o,r,s,n);
         return true;
       }
       return false;
@@ -188,8 +177,13 @@ contract Controllable {
       uint newValue = updateuintByint(allowance[o][s].n,_delta);
       allowance[o][s].n = newValue;
   }
-  function updateAllBurnOnInsertBurn_r33(uint n) private    {
-      allBurn.n += n;
+  function updateIncreaseAllowanceTotalOnInsertIncreaseAllowance_r5(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementIncreaseAllowanceTotal_r12(o,s,delta0);
+  }
+  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r1(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementDecreaseAllowanceTotal_r12(o,s,delta0);
   }
   function updateIncreaseAllowanceOnInsertRecv_increaseAllowance_r22(address s,uint n) private   returns (bool) {
       address o = msg.sender;
@@ -202,11 +196,21 @@ contract Controllable {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalOut_r28(p,delta0);
   }
-  function totalSupply() private view  returns (uint) {
-      uint b = allBurn.n;
-      uint m = allMint.n;
-      uint n = m-b;
-      return n;
+  function updateTotalSupplyOnIncrementAllBurn_r23(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
+  }
+  function updateControllerTransferOnInsertRecv_controllerTransfer_r15(address s,address r,uint n) private   returns (bool) {
+      address c = controller.p;
+      if(c==msg.sender) {
+        uint m = balanceOf[s].n;
+        if(n<=m) {
+          updateTransferOnInsertControllerTransfer_r18(s,r,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updateDecimalsOnInsertConstructor_r9() private    {
       decimals = DecimalsTuple(18,true);
@@ -232,6 +236,10 @@ contract Controllable {
       updateTotalOutOnInsertTransfer_r25(s,n);
       emit Transfer(s,r,n);
   }
+  function updateAllBurnOnInsertBurn_r33(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllBurn_r23(delta0);
+  }
   function updateBalanceOfOnIncrementTotalOut_r28(address p,int o) private    {
       int _delta = int(-o);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
@@ -239,23 +247,6 @@ contract Controllable {
   }
   function updateSymbolOnInsertConstructor_r31() private    {
       symbol = SymbolTuple(0,true);
-  }
-  function updateControllerTransferOnInsertRecv_controllerTransfer_r15(address s,address r,uint n) private   returns (bool) {
-      address c = controller.p;
-      if(c==msg.sender) {
-        uint m = balanceOf[s].n;
-        if(n<=m) {
-          updateTransferOnInsertControllerTransfer_r18(s,r,n);
-          emit ControllerTransfer(s,r,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
-      updateTotalInOnInsertTransfer_r11(r,n);
-      updateTotalOutOnInsertTransfer_r25(o,n);
-      emit Transfer(o,r,n);
   }
   function updateDecreaseAllowanceOnInsertRecv_approve_r2(address s,uint n) private   returns (bool) {
       address o = msg.sender;
@@ -299,12 +290,12 @@ contract Controllable {
   function updateTotalBalancesOnInsertConstructor_r7() private    {
       totalBalances = TotalBalancesTuple(0,true);
   }
-  function updateIncreaseAllowanceTotalOnInsertIncreaseAllowance_r5(address o,address s,uint n) private    {
-      int delta0 = int(n);
-      updateAllowanceOnIncrementIncreaseAllowanceTotal_r12(o,s,delta0);
-  }
   function updateTotalSupplyOnInsertConstructor_r13() private    {
-      // Empty()
+      totalSupply = TotalSupplyTuple(0,true);
+  }
+  function updateAllMintOnInsertMint_r14(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r23(delta0);
   }
   function updateAllowanceOnIncrementSpentTotal_r12(address o,address s,int l) private    {
       int _delta = int(-l);
@@ -346,6 +337,17 @@ contract Controllable {
   function updateControllerOnInsertConstructor_r3(address p) private    {
       controller = ControllerTuple(p,true);
   }
+  function updateControllerRedeemOnInsertRecv_controllerRedeem_r6(address p,uint n) private   returns (bool) {
+      address c = controller.p;
+      if(c==msg.sender) {
+        uint m = balanceOf[p].n;
+        if(p!=address(0) && n<=m) {
+          updateBurnOnInsertControllerRedeem_r27(p,n);
+          return true;
+        }
+      }
+      return false;
+  }
   function updateBalanceOfOnIncrementTotalIn_r28(address p,int i) private    {
       int _delta = int(i);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
@@ -354,12 +356,5 @@ contract Controllable {
   function updateOwnerOnInsertConstructor_r30() private    {
       address s = msg.sender;
       // Empty()
-  }
-  function updateAllMintOnInsertMint_r14(uint n) private    {
-      allMint.n += n;
-  }
-  function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r1(address o,address s,uint n) private    {
-      int delta0 = int(n);
-      updateAllowanceOnIncrementDecreaseAllowanceTotal_r12(o,s,delta0);
   }
 }

@@ -54,7 +54,6 @@ contract Linktoken {
   mapping(address=>TotalInTuple) totalIn;
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
-  OwnerTuple owner;
   mapping(address=>mapping(address=>DecreaseAllowanceTotalTuple)) decreaseAllowanceTotal;
   mapping(address=>TotalMintTuple) totalMint;
   TotalSupplyTuple totalSupply;
@@ -62,9 +61,9 @@ contract Linktoken {
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event DecreaseAllowance(address p,address s,uint n);
@@ -247,18 +246,6 @@ contract Linktoken {
       }
       return false;
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf[o].n;
-      uint k = allowance[o][s].n;
-      if(m>=n && k>=n && validRecipient(r)) {
-        updateTransferOnInsertTransferFrom_r14(o,r,n);
-        updateSpentTotalOnInsertTransferFrom_r22(o,s,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
-      return false;
-  }
   function updateAllowanceOnIncrementAllowanceTotal_r24(address o,address s,int m) private    {
       int _delta = int(m);
       uint newValue = updateuintByint(allowance[o][s].n,_delta);
@@ -321,6 +308,17 @@ contract Linktoken {
         updateTotalOutOnInsertTransfer_r20(s,n);
         updateTotalInOnInsertTransfer_r10(r,n);
         emit Transfer(s,r,n);
+        return true;
+      }
+      return false;
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r11(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf[o].n;
+      uint k = allowance[o][s].n;
+      if(m>=n && k>=n && validRecipient(r)) {
+        updateTransferOnInsertTransferFrom_r14(o,r,n);
+        updateSpentTotalOnInsertTransferFrom_r22(o,s,n);
         return true;
       }
       return false;

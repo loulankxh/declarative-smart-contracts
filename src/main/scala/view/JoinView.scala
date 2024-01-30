@@ -151,7 +151,11 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
 
   def getInsertedLiteral(relation: Relation): Literal = {
     val _lits = rule.body.filter(_.relation == relation)
-    require(_lits.size == 1, s"Only support rules where each relation appears at most once: $rule.")
+    if (!functions.contains(rule.head.relation)) {
+      // theta: canTransfer(p,q) :- precirculated(p,true), precirculated(q,true).
+      require(_lits.size == 1, s"Only support rules where each relation appears at most once: $rule.")
+    }
+    //require(_lits.size == 1, s"Only support rules where each relation appears at most once: $rule.")
     _lits.head
   }
 

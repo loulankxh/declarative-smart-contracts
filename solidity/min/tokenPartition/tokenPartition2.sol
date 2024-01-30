@@ -23,10 +23,10 @@ contract TokenPartition {
     uint n;
     bool _valid;
   }
+  OwnerTuple owner;
   mapping(uint=>TotalSupplyByPartitionTuple) totalSupplyByPartition;
   mapping(uint=>TotalBalancesByPartitionTuple) totalBalancesByPartition;
   AllBurnTuple allBurn;
-  OwnerTuple owner;
   AllMintTuple allMint;
   mapping(address=>mapping(uint=>BalanceOfByPartitionTuple)) balanceOfByPartition;
   event TransferByPartition(address from,address to,uint q,uint amount);
@@ -90,6 +90,9 @@ contract TokenPartition {
       int delta0 = int(n);
       updateBalanceOfByPartitionOnIncrementTotalIn_r16(p,q,delta0);
   }
+  function updateTotalSupplyOnIncrementAllBurn_r7(int b) private    {
+      // Empty()
+  }
   function updateTotalOutOnInsertTransferByPartition_r6(address p,uint q,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfByPartitionOnIncrementTotalOut_r16(p,q,delta0);
@@ -116,6 +119,9 @@ contract TokenPartition {
       }
       return false;
   }
+  function updateTotalSupplyOnIncrementAllMint_r7(int m) private    {
+      // Empty()
+  }
   function updateTotalBurnOnInsertRedeemByPartition_r14(address p,uint q,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfByPartitionOnIncrementTotalBurn_r16(p,q,delta0);
@@ -123,10 +129,10 @@ contract TokenPartition {
   function updateTotalSupplyOnInsertConstructor_r3() private    {
       // Empty()
   }
-  function updateBalanceOfByPartitionOnIncrementTotalIn_r16(address p,uint q,int i) private    {
-      int _delta = int(i);
-      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
-      balanceOfByPartition[p][q].n = newValue;
+  function updateAllBurnOnInsertRedeemByPartition_r10(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllBurn_r7(delta0);
+      allBurn.n += n;
   }
   function updateTransferByPartitionOnInsertRecv_transferByPartition_r17(address r,uint q,uint n) private   returns (bool) {
       address s = msg.sender;
@@ -158,12 +164,6 @@ contract TokenPartition {
       uint newValue = updateuintByint(totalSupplyByPartition[q].n,_delta);
       totalSupplyByPartition[q].n = newValue;
   }
-  function updateAllMintOnInsertIssueByPartition_r0(uint n) private    {
-      allMint.n += n;
-  }
-  function updateAllBurnOnInsertRedeemByPartition_r10(uint n) private    {
-      allBurn.n += n;
-  }
   function updateBalanceOfByPartitionOnIncrementTotalBurn_r16(address p,uint q,int m) private    {
       int _delta = int(-m);
       uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
@@ -182,5 +182,15 @@ contract TokenPartition {
   function updateIssueTotalByPartitionOnInsertIssueByPartition_r5(uint q,uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyByPartitionOnIncrementIssueTotalByPartition_r4(q,delta0);
+  }
+  function updateBalanceOfByPartitionOnIncrementTotalIn_r16(address p,uint q,int i) private    {
+      int _delta = int(i);
+      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
+      balanceOfByPartition[p][q].n = newValue;
+  }
+  function updateAllMintOnInsertIssueByPartition_r0(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r7(delta0);
+      allMint.n += n;
   }
 }

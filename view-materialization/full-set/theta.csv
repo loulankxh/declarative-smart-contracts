@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 spentTotal,balanceOf,allowanceTotal,totalIn,unlockTime,owner,totalOut,totalBurn,allBurn,allowance,totalMint,totalSupply,precirculated,allMint,,canTransfer
+=======
+totalSupply,allowanceTotal,owner,allBurn,totalMint,balanceOf,allowance,totalIn,totalOut,unlockTime,spentTotal,allMint,precirculated,totalBurn,,canTransfer
+>>>>>>> refs/remotes/origin/master

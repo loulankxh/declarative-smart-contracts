@@ -116,7 +116,6 @@ contract Tether {
   event SetParams(uint b,uint f);
   event Redeem(address p,uint amount);
   event Transfer(address from,address to,uint fee,uint amount);
-  event DestroyBlackFunds(address p,uint n);
   event TransferOwnership(address o);
   event Unpause(bool b);
   event AddBlackList(address p);
@@ -255,6 +254,19 @@ contract Tether {
       uint newValue = updateuintByint(totalSupply.n,_delta);
       totalSupply.n = newValue;
   }
+  function updateDestroyBlackFundsOnInsertRecv_destroyBlackFunds_r13(address p) private   returns (bool) {
+      address s = msg.sender;
+      if(s==owner.p) {
+        uint n = balanceOf[p].n;
+        if(true==isBlackListed[p].b) {
+          if(p!=address(0) && n>0) {
+            updateRedeemOnInsertDestroyBlackFunds_r10(p,n);
+            return true;
+          }
+        }
+      }
+      return false;
+  }
   function updateTransferWithoutFeeOnInsertTransferWithFee_r7(address s,address r,uint f) private    {
       address o = owner.p;
       updateTotalInOnInsertTransferWithoutFee_r12(o,f);
@@ -369,20 +381,6 @@ contract Tether {
       int _delta = int(-m);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
-  }
-  function updateDestroyBlackFundsOnInsertRecv_destroyBlackFunds_r13(address p) private   returns (bool) {
-      address s = msg.sender;
-      if(s==owner.p) {
-        uint n = balanceOf[p].n;
-        if(true==isBlackListed[p].b) {
-          if(p!=address(0) && n>0) {
-            updateRedeemOnInsertDestroyBlackFunds_r10(p,n);
-            emit DestroyBlackFunds(p,n);
-            return true;
-          }
-        }
-      }
-      return false;
   }
   function updateTotalSupplyOnIncrementAllIssue_r11(int m) private    {
       int _delta = int(m);

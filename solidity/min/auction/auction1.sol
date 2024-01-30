@@ -1,4 +1,8 @@
 contract Auction {
+  struct BalanceTuple {
+    uint n;
+    bool _valid;
+  }
   struct OwnerTuple {
     address p;
     bool _valid;
@@ -9,10 +13,6 @@ contract Auction {
   }
   struct BeneficiaryTuple {
     address p;
-    bool _valid;
-  }
-  struct WithdrawTotalTuple {
-    uint n;
     bool _valid;
   }
   struct HighestBidTuple {
@@ -28,19 +28,13 @@ contract Auction {
     bool b;
     bool _valid;
   }
-  struct BidTotalTuple {
-    uint n;
-    bool _valid;
-  }
+  mapping(address=>BalanceTuple) balance;
+  OwnerTuple owner;
   mapping(address=>WithdrawCountTuple) withdrawCount;
   BeneficiaryTuple beneficiary;
-  mapping(address=>WithdrawTotalTuple) withdrawTotal;
   HighestBidTuple highestBid;
   EndTimeTuple endTime;
-  mapping(address=>BidTotalTuple) bidTotal;
-  OwnerTuple owner;
   EndTuple end;
-  event Withdraw(address bidder,uint amount);
   event EndAuction(bool b);
   event Send(address p,uint amount);
   event Bid(address bidder,uint amount);
@@ -70,17 +64,30 @@ contract Auction {
       }
   }
   function getBalance(address p) public view  returns (uint) {
-      uint n = balance(p);
+      uint n = balance[p].n;
       return n;
   }
-  function balance(address p) private view  returns (uint) {
-      uint w = withdrawTotal[p].n;
-      uint b = bidTotal[p].n;
-      uint n = b-w;
-      return n;
+  function updateWithdrawOnInsertRecv_withdraw_r2() private   returns (bool) {
+      address p = highestBid.bidder;
+      uint m = highestBid.amount;
+      if(true==end.b) {
+        if(p==msg.sender) {
+          uint n = balance[p].n;
+          if(n>m) {
+            uint s = n-m;
+            updateWithdrawTotalOnInsertWithdraw_r4(p,s);
+            updateSendOnInsertWithdraw_r8(p,s);
+            return true;
+          }
+        }
+      }
+      return false;
   }
-  function updateBidTotalOnInsertBid_r12(address p,uint m) private    {
-      bidTotal[p].n += m;
+  function updateHighestBidOnInsertBid_r1(address p,uint m) private    {
+      uint _max = highestBid.amount;
+      if(m>_max) {
+        highestBid = HighestBidTuple(p,m,true);
+      }
   }
   function updateBidOnInsertRecv_bid_r10() private   returns (bool) {
       uint t1 = block.timestamp;
@@ -113,32 +120,18 @@ contract Auction {
       }
       return false;
   }
-  function updateWithdrawOnInsertRecv_withdraw_r2() private   returns (bool) {
-      address p = highestBid.bidder;
-      uint m = highestBid.amount;
-      if(true==end.b) {
-        if(p==msg.sender) {
-          uint n = balance(p);
-          if(n>m) {
-            uint s = n-m;
-            updateWithdrawTotalOnInsertWithdraw_r4(p,s);
-            updateSendOnInsertWithdraw_r8(p,s);
-            emit Withdraw(p,s);
-            return true;
-          }
-        }
-      }
-      return false;
-  }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
+  function updateWithdrawTotalOnInsertWithdraw_r4(address p,uint m) private    {
+      int delta0 = int(m);
+      updateBalanceOnIncrementWithdrawTotal_r7(p,delta0);
   }
   function updateOwnerOnInsertConstructor_r9() private    {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
+  }
+  function updateBalanceOnIncrementBidTotal_r7(address p,int b) private    {
+      int _delta = int(b);
+      uint newValue = updateuintByint(balance[p].n,_delta);
+      balance[p].n = newValue;
   }
   function updateSendOnInsertRecv_endAuction_r3() private   returns (bool) {
       uint t1 = block.timestamp;
@@ -157,12 +150,6 @@ contract Auction {
       }
       return false;
   }
-  function updateBeneficiaryOnInsertConstructor_r11(address p) private    {
-      beneficiary = BeneficiaryTuple(p,true);
-  }
-  function updateWithdrawTotalOnInsertWithdraw_r4(address p,uint m) private    {
-      withdrawTotal[p].n += m;
-  }
   function updateEndTimeOnInsertConstructor_r15(uint d) private    {
       uint t = block.timestamp;
       uint t2 = t+d;
@@ -172,29 +159,40 @@ contract Auction {
       payable(p).send(n);
       emit Send(p,n);
   }
-  function updateEndOnInsertEndAuction_r0(bool p) private    {
-      if(p==true) {
-        end = EndTuple(true,true);
-      }
+  function updateBidTotalOnInsertBid_r12(address p,uint m) private    {
+      int delta0 = int(m);
+      updateBalanceOnIncrementBidTotal_r7(p,delta0);
   }
-  function updateHighestBidOnInsertBid_r1(address p,uint m) private    {
-      uint _max = highestBid.amount;
-      if(m>_max) {
-        highestBid = HighestBidTuple(p,m,true);
-      }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
   }
   function updateWithdrawOnInsertRecv_withdraw_r5() private   returns (bool) {
       if(true==end.b) {
         address h = highestBid.bidder;
         address p = msg.sender;
-        uint n = balance(p);
+        uint n = balance[p].n;
         if(p!=h && n>0) {
           updateWithdrawTotalOnInsertWithdraw_r4(p,n);
           updateSendOnInsertWithdraw_r8(p,n);
-          emit Withdraw(p,n);
           return true;
         }
       }
       return false;
+  }
+  function updateBeneficiaryOnInsertConstructor_r11(address p) private    {
+      beneficiary = BeneficiaryTuple(p,true);
+  }
+  function updateBalanceOnIncrementWithdrawTotal_r7(address p,int w) private    {
+      int _delta = int(-w);
+      uint newValue = updateuintByint(balance[p].n,_delta);
+      balance[p].n = newValue;
+  }
+  function updateEndOnInsertEndAuction_r0(bool p) private    {
+      if(p==true) {
+        end = EndTuple(true,true);
+      }
   }
 }

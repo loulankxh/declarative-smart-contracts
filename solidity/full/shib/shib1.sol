@@ -64,12 +64,10 @@ contract Shib {
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   mapping(address=>mapping(address=>IncreaseAllowanceTotalTuple)) increaseAllowanceTotal;
-  event TransferFrom(address from,address to,address spender,uint amount);
   event Burn(address p,uint amount);
   event Mint(address p,uint amount);
   event DecreaseAllowance(address p,address s,uint n);
   event IncreaseAllowance(address p,address s,uint n);
-  event BurnFrom(address p,address from,uint n);
   event Transfer(address from,address to,uint amount);
   constructor(uint name,uint symbol,uint decimals,uint totalSupply,address feeReceiver,address tokenOwnerAddress) public {
     updateBalanceOfOnInsertConstructor_r0(totalSupply,tokenOwnerAddress);
@@ -162,6 +160,17 @@ contract Shib {
       updateAllowanceOnIncrementSpentTotal_r1(o,s,delta0);
       spentTotal[o][s].m += n;
   }
+  function updateTransferFromOnInsertRecv_transferFrom_r26(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance[o][s].n;
+      uint m = balanceOf[o].n;
+      if(m>=n && k>=n) {
+        updateSpentTotalOnInsertTransferFrom_r9(o,s,n);
+        updateTransferOnInsertTransferFrom_r12(o,r,n);
+        return true;
+      }
+      return false;
+  }
   function updateBalanceOfOnIncrementTotalIn_r7(address p,int i) private    {
       int _delta = int(i);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
@@ -197,18 +206,6 @@ contract Shib {
       updateTotalInOnInsertTransfer_r30(r,n);
       updateTotalOutOnInsertTransfer_r22(o,n);
       emit Transfer(o,r,n);
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r26(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint k = allowance[o][s].n;
-      uint m = balanceOf[o].n;
-      if(m>=n && k>=n) {
-        updateSpentTotalOnInsertTransferFrom_r9(o,s,n);
-        updateTransferOnInsertTransferFrom_r12(o,r,n);
-        emit TransferFrom(o,r,s,n);
-        return true;
-      }
-      return false;
   }
   function updateBurnOnInsertRecv_burn_r5(uint n) private   returns (bool) {
       address s = msg.sender;

@@ -123,15 +123,16 @@ abstract class AbstractImperativeTranslator(program: Program, materializedRelati
     def isTransactionTrigger(trigger: Trigger): Boolean = trigger.relation.name.startsWith(transactionRelationPrefix)
 
     // val triggeredRules: Set[Rule] = program.rules.filter(
-    val triggeredRules: Set[Rule] = rulesToEvaluate.filter(
+    var triggeredRules: Set[Rule] = rulesToEvaluate.filter(
       r => r.body.map(_.relation).contains(trigger.relation) || r.aggregators.exists(_.relation==trigger.relation)
     ).filterNot( /** transaction rules are only triggered by new transaction.  */
       r => isTransactionRule(r) && !isTransactionTrigger(trigger)
-    ).filterNot( /** relations that declared as functions are not triggered */
-      // r=>program.functions.contains(r.head.relation)
-      r=>queryRelations.contains(r.head.relation)
     )
-
+//      .filterNot( /** relations that declared as functions are not triggered */
+//      // r=>program.functions.contains(r.head.relation)
+//      r=>queryRelations.contains(r.head.relation)
+//    )
+    triggeredRules = triggeredRules.filterNot(r=>r.head.relation.name=="canTransfer")
     trigger match {
       case ReplacedByKey(_, _, targetRelation) => triggeredRules.filter(_.head.relation==targetRelation)
       case _:InsertTuple|_:DeleteTuple|_:IncrementValue => triggeredRules
@@ -173,7 +174,8 @@ abstract class AbstractImperativeTranslator(program: Program, materializedRelati
       val isTx = isTransactionRule(rule)
       val isAgg = rule.aggregators.nonEmpty
       val ruleId = views(rule).ruleId
-      val fromBody = rule.body.filterNot(_.relation.isInstanceOf[ReservedRelation])
+//      val fromBody = rule.body.filterNot(_.relation.isInstanceOf[ReservedRelation])
+      val fromBody = rule.body
                                .filterNot(_.relation.name.contains(transactionRelationPrefix))
                                .map(lit => Tuple5(lit.relation, rule.head.relation, ruleId, isAgg, isTx))
       val fromAggregator = rule.aggregators.map(agg =>
