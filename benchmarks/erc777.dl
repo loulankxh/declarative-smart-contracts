@@ -7,20 +7,10 @@
 // New views
 .decl allowance(p: address, s: address, n:uint)[0,1]
 // Transactions
-<<<<<<< HEAD
-// .decl recv_mint(p: address , amount: uint)
-// .decl burn(p: address, amount: uint)
 .decl mint(p: address, amount: uint, data: uint, odata: uint)
 .decl recv_mint(amount: uint, data: uint)
 .decl burn(p: address, amount: uint, data: uint, odata: uint)
 .decl recv_burn(amount: uint, data: uint)
-
-=======
-.decl mint(p: address, amount: uint)
-.decl recv_mint(p: address, amount: uint)
-.decl burn(p: address, amount: uint)
-.decl recv_burn(p: address, amount: uint)
->>>>>>> refs/remotes/origin/master
 // .decl transfer(from: address, to: address, amount: uint)
 .decl transfer(o: address, r: address, n: uint, data: uint, rdata: uint, b: bool)
 // .decl recv_transfer(to: address, amount: uint)
@@ -31,20 +21,12 @@
 .decl recv_approve(s: address, n:uint)
 // ".decl" should be ahead of "public"
 .decl recv_authorizeOperator(o: address)
-<<<<<<< HEAD
 .decl recv_revokeOperator(o: address)
 .decl operators(p:address , o:address, b: bool)[0,1]
 .decl revokedDefaultOperator(p:address , o:address, b: bool)[0,1]
 .decl defaultOperator(p:address, b:bool)[0]
 .decl recv_operatorBurn(p:address,n:uint,data:uint,operatorData:uint)
 .decl recv_operatorSend(o:address,r:address,n:uint,data:uint,operatorData:uint)
-
-=======
-.decl recv_revokeDefaultOperator(o: address)
-.decl operators(p:address , o:address, b: bool)[0,1]
-.decl revokedDefaultOperator(p:address , o:address, b: bool)[0,1]
-.decl defaultOperator(p:address, b:bool)[0]
->>>>>>> refs/remotes/origin/master
 // Interfaces
 .public recv_mint
 .public recv_burn
@@ -55,33 +37,20 @@
 .public recv_approve
 .public recv_transferFrom
 .public allowance(2)
-<<<<<<< HEAD
 .public recv_revokeOperator
-=======
-.public recv_revokeDefaultOperator
->>>>>>> refs/remotes/origin/master
 .public recv_authorizeOperator
 .public operators(2)
 .public revokedDefaultOperator(2)
 .public defaultOperator(1)
-<<<<<<< HEAD
 .public recv_operatorBurn(1)
 .public recv_operatorSend(2)
-=======
->>>>>>> refs/remotes/origin/master
 // Rules
 // owner(s) :- constructor(name: uint, symbol: uint), msgSender(s).
 owner(s) :- constructor(_,_), msgSender(s).
 totalSupply(0) :- constructor(_,_).
-<<<<<<< HEAD
 mint(s,a,d,0) :- recv_mint(a,d), msgSender(s).
 burn(s,a,d,0) :- recv_burn(a,d), msgSender(s), balanceOf(s,m), a<=m.
 transfer(s,r,n,0,0,false) :- recv_transfer(r, n), msgSender(s), balanceOf(s,m), n<=m.
-=======
-mint(p,n) :- recv_mint(p,n), msgSender(s), owner(s), p!=0.
-burn(p,n) :- recv_burn(p,n), msgSender(s), owner(s), p!=0 ,balanceOf(p,m), n<=m.
-transfer(s,r,n,0,0,false) :- recv_transfer(r, amount), msgSender(s), balanceOf(s,m), amount<=m.
->>>>>>> refs/remotes/origin/master
 .decl totalMint(p: address, n: uint)[0]
 .decl totalBurn(p: address, n: uint)[0]
 .decl totalOut(p: address, n: uint)[0]
@@ -90,13 +59,8 @@ transfer(s,r,n,0,0,false) :- recv_transfer(r, amount), msgSender(s), balanceOf(s
 // totalIn(p,s) :- transfer(_,p,_), s = sum n: transfer(_,p,n).
 totalOut(p,s) :- transfer(p,_,_,_,_,_), s = sum n: transfer(p,_,n,_,_,_).
 totalIn(p,s) :- transfer(_,p,_,_,_,_), s = sum n: transfer(_,p,n,_,_,_).
-<<<<<<< HEAD
 totalMint(p,s) :- mint(p,_,_,_), s = sum a: mint(p,a,_,_).
 totalBurn(p,s) :- burn(p,_,_,_), s = sum a: burn(p,a,_,_).
-=======
-totalMint(p,s) :- mint(p,_), s = sum n: mint(p,n).
-totalBurn(p,s) :- burn(p,_), s = sum n: burn(p,n).
->>>>>>> refs/remotes/origin/master
 balanceOf(p,s) :- totalMint(p,n), totalBurn(p,m), totalOut(p,o), totalIn(p,i), s:=n+i-m-o.
 .decl *allMint(n: uint)
 .decl *allBurn(n: uint)
@@ -118,21 +82,11 @@ allowance(o,s,n) :- allowanceTotal(o,s,m), spentTotal(o,s,l), n := m-l.
 // ERC777 functionalities
 operators(p,o,true) :- recv_authorizeOperator(o), msgSender(p), defaultOperator(o, false), p!=o.
 revokedDefaultOperator(o,p,false) :- recv_authorizeOperator(o), msgSender(p), defaultOperator(o,true), p!=o.
-<<<<<<< HEAD
 revokedDefaultOperator(p,o,true) :- recv_revokeOperator(o), msgSender(p), defaultOperator(o,true), p!=o.
 operators(p,o,false) :- recv_revokeOperator(o), msgSender(p), defaultOperator(o,false), p!=o.
 .decl recv_send(r: address, n: uint, data: uint)
 // .decl send(s: address, r: address, n: uint, data: uint, odata: uint, b: bool)
 // send(s,r,n,d,0,true) :- recv_send(r,n,d), msgSender(s), balanceOf(s,m), m >= n, r!=0, n>0.
-=======
-revokedDefaultOperator(p,o,true) :- recv_revokeDefaultOperator(o), msgSender(p), defaultOperator(o,true), p!=o.
-operators(p,o,false) :- recv_revokeDefaultOperator(o), msgSender(p), defaultOperator(o,false), p!=o.
-.decl recv_operatorSend(o:address,r:address,n:uint,data:uint,operatorData:uint)
-.decl recv_send(r: address, n: uint, data: uint)
-// .decl send(s: address, r: address, n: uint, data: uint, odata: uint, b: bool)
-// send(s,r,n,d,0,true) :- recv_send(r,n,d), msgSender(s), balanceOf(s,m), m >= n, r!=0, n>0.
-.decl recv_operatorBurn(p:address,n:uint,data:uint,operatorData:uint)
->>>>>>> refs/remotes/origin/master
 .decl operatorSend(o:address,r:address,s:address,n:uint,data:uint,operatorData:uint)
 .decl operatorBurn(p:address,s:address,n:uint,data:uint,operatorData:uint)
 operatorSend(o,r,s,n,data,operatorData) :- recv_operatorSend(o,r,n,data,operatorData), msgSender(s), operators(o,s,true),
@@ -145,20 +99,11 @@ operatorSend(o,r,s,n,data,operatorData) :- recv_operatorSend(o,r,n,data,operator
 transfer(o,r,n,0,0,false) :- operatorSend(o,r,_,n,_,_).
 transfer(o,r,n,0,0,false) :- operatorSend(o,r,_,n,_,_).
 operatorBurn(p,s,n,data,operatorData) :- recv_operatorBurn(p,n,data,operatorData), msgSender(s), operators(p,s,true),
-<<<<<<< HEAD
-=======
-                                         balanceOf(p,m), m >= n, p!=0, n>0.
-operatorBurn(p,s,n,data,operatorData) :- recv_operatorBurn(p,n,data,operatorData), msgSender(p),
->>>>>>> refs/remotes/origin/master
                                          balanceOf(p,m), m >= n, p!=0, n>0.
 operatorBurn(p,s,n,data,operatorData) :- recv_operatorBurn(p,n,data,operatorData), msgSender(s),
                                          defaultOperator(s,true), revokedDefaultOperator(p,s,false),
                                          balanceOf(p,m), m >= n, p!=0, n>0.
-<<<<<<< HEAD
 burn(p,n,d,o) :- operatorBurn(p,_,n,d,o).
-=======
-burn(p,n) :- operatorBurn(p,_,n,_,_).
->>>>>>> refs/remotes/origin/master
 // Properties
 .decl inconsistentOperator(p:address, o:address)[0,1]
 .violation inconsistentOperator
