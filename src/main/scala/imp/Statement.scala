@@ -189,6 +189,8 @@ case class Constructor(params: List[Parameter], statement: Statement) extends So
 }
 case class ReadTuple(relation: Relation, keyList: List[Parameter],
                      outputVar: String) extends SolidityStatement{
+  println("relation:")
+  println(relation.toString)
   require(relation.isInstanceOf[SingletonRelation] || keyList.nonEmpty)
   override def toString: String = {
     val tupleName: String = s"${relation.name}Tuple"
@@ -200,6 +202,8 @@ object ReadTuple {
   def apply(relation: Relation, keyList: List[Parameter]): ReadTuple = {
     // val tupleName: String = s"${relation.name}Tuple"
     val tupleName: String = DataStructureHelper.relationalTupleName(relation)
+    println("keyList")
+    println(keyList.toString())
     ReadTuple(relation, keyList, tupleName)
   }
 }

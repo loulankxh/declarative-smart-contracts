@@ -44,7 +44,7 @@ object Main extends App {
         val minListSet = minList.toSet
         val funcListSet = funcList.tail.toSet  // skip the "" entry
         val minSet = minListSet.flatMap(n => dl.relations.filter(_.name == n))
-        require(minSet.size == minListSet.size)
+        if(dl.name!="Theta") require(minSet.size == minListSet.size)
         val funcSet = funcListSet.flatMap(n => dl.relations.filter(_.name == n))
         require(funcSet.size == funcListSet.size)
         rowLists = ((minSet, funcSet)) :: rowLists

@@ -58,6 +58,10 @@ case class DataStructureHelper(relation: Relation, indices: List[Int], enablePro
             case None => {}
           }
         }
+        println("statement:")
+        println(search.toString)
+        println("rel:", rel.toString)
+        println("keys:", keys.toString())
         val readTuple = if (!enableProjection) ReadTuple(rel, keys) else Empty()
         val remainingConditions = search.conditions.filterNot(c => keys.contains(c.p))
         val condition = Condition.makeConjunction(remainingConditions.toList: _*)
