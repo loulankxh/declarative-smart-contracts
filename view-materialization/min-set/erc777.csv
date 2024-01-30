@@ -1,8 +1,8 @@
-operators,allowanceTotal,totalSupply,balanceOf,revokedDefaultOperator,defaultOperator,owner,spentTotal,,allowance
-totalMint,totalBurn,operators,allowanceTotal,totalOut,totalSupply,revokedDefaultOperator,defaultOperator,owner,totalIn,spentTotal,,balanceOf,allowance
-totalIn,totalMint,totalBurn,operators,allowance,allBurn,totalOut,revokedDefaultOperator,defaultOperator,owner,allMint,,totalSupply,balanceOf
-operators,allBurn,allowanceTotal,balanceOf,revokedDefaultOperator,defaultOperator,owner,allMint,spentTotal,,totalSupply,allowance
-operators,allowance,allBurn,balanceOf,revokedDefaultOperator,defaultOperator,owner,allMint,,totalSupply
-totalIn,totalMint,totalBurn,operators,allBurn,allowanceTotal,totalOut,revokedDefaultOperator,defaultOperator,owner,allMint,spentTotal,,totalSupply,balanceOf,allowance
-operators,allowance,totalSupply,balanceOf,revokedDefaultOperator,defaultOperator,owner,
-totalMint,totalBurn,operators,allowance,totalOut,totalSupply,revokedDefaultOperator,defaultOperator,owner,totalIn,,balanceOf
+totalOut,owner,totalMint,totalBurn,defaultOperator,allowance,totalSupply,operators,totalIn,revokedDefaultOperator,,balanceOf
+owner,defaultOperator,totalSupply,spentTotal,operators,allowanceTotal,balanceOf,revokedDefaultOperator,,allowance
+owner,allowance,defaultOperator,totalSupply,operators,balanceOf,revokedDefaultOperator,
+allBurn,allMint,owner,defaultOperator,allowance,operators,balanceOf,revokedDefaultOperator,,totalSupply
+allBurn,allMint,owner,defaultOperator,spentTotal,operators,allowanceTotal,balanceOf,revokedDefaultOperator,,allowance,totalSupply
+allBurn,allMint,owner,totalOut,totalMint,totalBurn,defaultOperator,spentTotal,allowanceTotal,operators,totalIn,revokedDefaultOperator,,balanceOf,allowance,totalSupply
+allBurn,allMint,owner,totalOut,totalMint,totalBurn,defaultOperator,allowance,operators,totalIn,revokedDefaultOperator,,balanceOf,totalSupply
+totalOut,owner,totalMint,totalBurn,defaultOperator,totalSupply,spentTotal,operators,totalIn,revokedDefaultOperator,allowanceTotal,,balanceOf,allowance

@@ -1,8 +1,8 @@
-decimals,allowance,allBurn,totalBalances,balanceOf,name,symbol,controller,allMint,,totalSupply
-decreaseAllowanceTotal,decimals,allBurn,totalBalances,increaseAllowanceTotal,balanceOf,name,symbol,controller,allMint,spentTotal,,totalSupply,allowance
-totalMint,decimals,totalBurn,allowance,totalBalances,totalOut,totalSupply,symbol,name,controller,totalIn,,balanceOf
-totalIn,totalMint,decimals,totalBurn,allowance,allBurn,totalBalances,totalOut,symbol,name,controller,allMint,,totalSupply,balanceOf
-decreaseAllowanceTotal,decimals,totalBalances,increaseAllowanceTotal,totalSupply,balanceOf,name,symbol,controller,spentTotal,,allowance
-decimals,allowance,totalBalances,totalSupply,balanceOf,name,symbol,controller,
-decreaseAllowanceTotal,totalMint,decimals,totalBurn,totalBalances,increaseAllowanceTotal,totalOut,totalSupply,symbol,name,controller,totalIn,spentTotal,,balanceOf,allowance
-decreaseAllowanceTotal,totalIn,decimals,totalBurn,totalMint,allBurn,totalBalances,increaseAllowanceTotal,totalOut,symbol,name,controller,allMint,spentTotal,,totalSupply,balanceOf,allowance
+allBurn,decimals,allMint,controller,name,allowance,totalBalances,balanceOf,symbol,,totalSupply
+decimals,totalOut,controller,name,totalBurn,allowance,totalMint,totalSupply,totalBalances,totalIn,symbol,,balanceOf
+allBurn,decimals,allMint,totalOut,controller,name,totalBurn,allowance,totalMint,totalBalances,totalIn,symbol,,balanceOf,totalSupply
+decimals,controller,name,allowance,totalSupply,totalBalances,balanceOf,symbol,
+allBurn,decimals,allMint,decreaseAllowanceTotal,controller,name,spentTotal,totalBalances,increaseAllowanceTotal,balanceOf,symbol,,allowance,totalSupply
+decimals,decreaseAllowanceTotal,controller,name,totalSupply,spentTotal,totalBalances,increaseAllowanceTotal,balanceOf,symbol,,allowance
+allBurn,decimals,allMint,decreaseAllowanceTotal,totalOut,controller,name,totalBurn,totalMint,spentTotal,totalBalances,increaseAllowanceTotal,totalIn,symbol,,balanceOf,allowance,totalSupply
+decimals,decreaseAllowanceTotal,totalOut,controller,name,totalBurn,totalMint,totalSupply,spentTotal,totalBalances,increaseAllowanceTotal,totalIn,symbol,,balanceOf,allowance

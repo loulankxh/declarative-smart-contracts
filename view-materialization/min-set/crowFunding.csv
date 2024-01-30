@@ -1,2 +1,2 @@
-closed,refundTotal,msgValue,target,beneficiary,investTotal,raised,owner,totalBalance,,balanceOf
-closed,msgValue,target,beneficiary,balanceOf,raised,owner,totalBalance,
+totalBalance,owner,closed,raised,balanceOf,beneficiary,target,msgValue,
+refundTotal,totalBalance,owner,investTotal,closed,raised,beneficiary,target,msgValue,,balanceOf
