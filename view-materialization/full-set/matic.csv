@@ -1,1 +1,1 @@
-balanceOf,allowanceTotal,totalMint,totalIn,totalSupply,spentTotal,allowance,allMint,totalBurn,isPauser,allBurn,decreaseAllowanceTotal,paused,owner,totalOut,
+owner,totalIn,allBurn,totalSupply,totalBurn,paused,totalOut,spentTotal,allowanceTotal,balanceOf,allowance,isPauser,totalMint,decreaseAllowanceTotal,allMint,

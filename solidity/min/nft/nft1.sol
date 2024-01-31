@@ -37,12 +37,6 @@ contract Nft {
       address p = ownerOf(tokenId);
       return p;
   }
-  function mint(uint tokenId,address to) public    {
-      bool r1 = updateTransferOnInsertRecv_mint_r1(tokenId,to);
-      if(r1==false) {
-        revert("Rule condition failed");
-      }
-  }
   function transfer(address to,uint tokenId) public    {
       bool r11 = updateTransferOnInsertRecv_transfer_r11(to,tokenId);
       if(r11==false) {
@@ -80,6 +74,12 @@ contract Nft {
         revert("Rule condition failed");
       }
   }
+  function mint(address to,uint tokenId) public    {
+      bool r1 = updateTransferOnInsertRecv_mint_r1(to,tokenId);
+      if(r1==false) {
+        revert("Rule condition failed");
+      }
+  }
   function getApproved(uint tokenId,address p) public view  returns (bool) {
       bool b = approved(tokenId,p);
       return b;
@@ -97,20 +97,6 @@ contract Nft {
         updateOwnerOfOnInsertLatestTransfer_r9(tokenId,r);
         latestTransfer[tokenId] = LatestTransferTuple(s,r,t,true);
       }
-  }
-  function updateTransferOnInsertRecv_mint_r1(uint tokenId,address to) private   returns (bool) {
-      address s = msg.sender;
-      uint time = block.timestamp;
-      if(s==owner.p) {
-        if(false==exists(tokenId)) {
-          if(to!=address(0)) {
-            updateLatestTransferOnInsertTransfer_r15(tokenId,address(0),to,time);
-            emit Transfer(tokenId,address(0),to,time);
-            return true;
-          }
-        }
-      }
-      return false;
   }
   function updateSetApprovalOnInsertRecv_setApproval_r8(uint tokenId,address p,bool b) private   returns (bool) {
       address o = msg.sender;
@@ -207,6 +193,20 @@ contract Nft {
           updateLatestTransferOnInsertTransfer_r15(tokenId,s,r,time);
           emit Transfer(tokenId,s,r,time);
           return true;
+        }
+      }
+      return false;
+  }
+  function updateTransferOnInsertRecv_mint_r1(address to,uint tokenId) private   returns (bool) {
+      address s = msg.sender;
+      uint time = block.timestamp;
+      if(s==owner.p) {
+        if(false==exists(tokenId)) {
+          if(to!=address(0)) {
+            updateLatestTransferOnInsertTransfer_r15(tokenId,address(0),to,time);
+            emit Transfer(tokenId,address(0),to,time);
+            return true;
+          }
         }
       }
       return false;

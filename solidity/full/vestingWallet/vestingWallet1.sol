@@ -1,4 +1,8 @@
 contract VestingWallet {
+  struct ReleasedTuple {
+    uint n;
+    bool _valid;
+  }
   struct BeneficiaryTuple {
     address p;
     bool _valid;
@@ -11,18 +15,14 @@ contract VestingWallet {
     uint t;
     bool _valid;
   }
-  struct ReleasedTuple {
-    uint n;
-    bool _valid;
-  }
   ReleasedTuple released;
   BeneficiaryTuple beneficiary;
   DurationTuple duration;
   StartTuple start;
   event Release(uint n);
-  constructor(uint s,uint d,address b) public {
-    updateStartOnInsertConstructor_r1(s);
+  constructor(address b,uint s,uint d) public {
     updateDurationOnInsertConstructor_r5(d);
+    updateStartOnInsertConstructor_r1(s);
     updateBeneficiaryOnInsertConstructor_r4(b);
   }
   function release() public    {

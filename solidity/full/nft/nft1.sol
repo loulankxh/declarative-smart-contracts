@@ -48,6 +48,13 @@ contract Nft {
   constructor() public {
     updateOwnerOnInsertConstructor_r12();
   }
+  function transferFrom(address from,address to,uint tokenId) public    {
+      bool r7 = updateTransferOnInsertRecv_transferFrom_r7(from,to,tokenId);
+      bool r5 = updateTransferOnInsertRecv_transferFrom_r5(from,to,tokenId);
+      if(r7==false && r5==false) {
+        revert("Rule condition failed");
+      }
+  }
   function transfer(address to,uint tokenId) public    {
       bool r11 = updateTransferOnInsertRecv_transfer_r11(to,tokenId);
       if(r11==false) {
@@ -92,15 +99,8 @@ contract Nft {
         revert("Rule condition failed");
       }
   }
-  function transferFrom(address from,address to,uint tokenId) public    {
-      bool r7 = updateTransferOnInsertRecv_transferFrom_r7(from,to,tokenId);
-      bool r5 = updateTransferOnInsertRecv_transferFrom_r5(from,to,tokenId);
-      if(r7==false && r5==false) {
-        revert("Rule condition failed");
-      }
-  }
-  function mint(uint tokenId,address to) public    {
-      bool r1 = updateTransferOnInsertRecv_mint_r1(tokenId,to);
+  function mint(address to,uint tokenId) public    {
+      bool r1 = updateTransferOnInsertRecv_mint_r1(to,tokenId);
       if(r1==false) {
         revert("Rule condition failed");
       }
@@ -167,20 +167,6 @@ contract Nft {
         approved[tokenId][p] = ApprovedTuple(b,true);
       }
   }
-  function updateTransferOnInsertRecv_mint_r1(uint tokenId,address to) private   returns (bool) {
-      address s = msg.sender;
-      uint time = block.timestamp;
-      if(s==owner.p) {
-        if(false==exists[tokenId].b) {
-          if(to!=address(0)) {
-            updateLatestTransferOnInsertTransfer_r15(tokenId,address(0),to,time);
-            emit Transfer(tokenId,address(0),to,time);
-            return true;
-          }
-        }
-      }
-      return false;
-  }
   function updateExistsOnDeleteLatestTransfer_r13(uint tokenId,address to) private    {
       if(to!=address(0)) {
         if(true==exists[tokenId].b) {
@@ -208,6 +194,20 @@ contract Nft {
   }
   function updateBalanceOfOnDeleteOwnerOf_r4(uint _tokenId0,address p) private    {
       balanceOf[p].n -= 1;
+  }
+  function updateTransferOnInsertRecv_mint_r1(address to,uint tokenId) private   returns (bool) {
+      address s = msg.sender;
+      uint time = block.timestamp;
+      if(s==owner.p) {
+        if(false==exists[tokenId].b) {
+          if(to!=address(0)) {
+            updateLatestTransferOnInsertTransfer_r15(tokenId,address(0),to,time);
+            emit Transfer(tokenId,address(0),to,time);
+            return true;
+          }
+        }
+      }
+      return false;
   }
   function updateTransferOnInsertRecv_burn_r14(uint tokenId) private   returns (bool) {
       address s = msg.sender;

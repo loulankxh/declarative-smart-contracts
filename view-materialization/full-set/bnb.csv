@@ -1,1 +1,1 @@
-balanceOf,allowanceTotal,totalMint,totalIn,totalFreeze,totalSupply,spentTotal,allowance,allMint,totalBurn,totalUnfreeze,allBurn,owner,freezeOf,totalOut,
+owner,totalIn,allBurn,freezeOf,totalSupply,totalBurn,totalOut,spentTotal,allowanceTotal,balanceOf,totalUnfreeze,allowance,totalMint,totalFreeze,allMint,

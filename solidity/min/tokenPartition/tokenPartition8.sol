@@ -3,11 +3,11 @@ contract TokenPartition {
     address p;
     bool _valid;
   }
-  struct TotalSupplyByPartitionTuple {
+  struct IssueTotalByPartitionTuple {
     uint n;
     bool _valid;
   }
-  struct TotalBurnTuple {
+  struct TotalSupplyTuple {
     uint n;
     bool _valid;
   }
@@ -15,45 +15,30 @@ contract TokenPartition {
     uint m;
     bool _valid;
   }
-  struct TotalInTuple {
+  struct RedeemTotalByPartitionTuple {
     uint n;
     bool _valid;
   }
-  struct TotalMintTuple {
+  struct BalanceOfByPartitionTuple {
     uint n;
     bool _valid;
   }
-  struct AllBurnTuple {
-    uint n;
-    bool _valid;
-  }
-  struct TotalOutTuple {
-    uint n;
-    bool _valid;
-  }
-  struct AllMintTuple {
-    uint n;
-    bool _valid;
-  }
-  mapping(address=>mapping(uint=>TotalOutTuple)) totalOut;
   OwnerTuple owner;
-  mapping(uint=>TotalSupplyByPartitionTuple) totalSupplyByPartition;
-  mapping(address=>mapping(uint=>TotalBurnTuple)) totalBurn;
-  AllMintTuple allMint;
+  mapping(uint=>IssueTotalByPartitionTuple) issueTotalByPartition;
+  TotalSupplyTuple totalSupply;
+  mapping(address=>mapping(uint=>BalanceOfByPartitionTuple)) balanceOfByPartition;
   mapping(uint=>TotalBalancesByPartitionTuple) totalBalancesByPartition;
-  mapping(address=>mapping(uint=>TotalInTuple)) totalIn;
-  mapping(address=>mapping(uint=>TotalMintTuple)) totalMint;
-  AllBurnTuple allBurn;
+  mapping(uint=>RedeemTotalByPartitionTuple) redeemTotalByPartition;
   event TransferByPartition(address from,address to,uint q,uint amount);
   event IssueByPartition(address p,uint q,uint amount);
   event RedeemByPartition(address p,uint q,uint amount);
   constructor() public {
-    updateOwnerOnInsertConstructor_r11();
     updateTotalSupplyOnInsertConstructor_r3();
+    updateOwnerOnInsertConstructor_r12();
   }
   function redeemByPartition(address p,uint q,uint amount) public    {
-      bool r9 = updateRedeemByPartitionOnInsertRecv_redeemByPartition_r9(p,q,amount);
-      if(r9==false) {
+      bool r10 = updateRedeemByPartitionOnInsertRecv_redeemByPartition_r10(p,q,amount);
+      if(r10==false) {
         revert("Rule condition failed");
       }
   }
@@ -64,55 +49,45 @@ contract TokenPartition {
       }
   }
   function getTotalSupply() public view  returns (uint) {
-      uint n = totalSupply();
+      uint n = totalSupply.n;
       return n;
   }
-  function getBalanceOfByPartition(address p,uint q) public view  returns (uint) {
-      uint n = balanceOfByPartition(p,q);
-      return n;
-  }
-  function transferByPartition(address to,uint q,uint amount) public    {
-      bool r17 = updateTransferByPartitionOnInsertRecv_transferByPartition_r17(to,q,amount);
-      if(r17==false) {
+  function transferByPartition(address from,address to,uint q,uint amount) public    {
+      bool r6 = updateTransferByPartitionOnInsertRecv_transferByPartition_r6(from,to,q,amount);
+      if(r6==false) {
         revert("Rule condition failed");
       }
   }
-  function getTotalSupplyByPartition(uint q) public view  returns (uint) {
-      uint n = totalSupplyByPartition[q].n;
+  function getBalanceOfByPartition(address p,uint q) public view  returns (uint) {
+      uint n = balanceOfByPartition[p][q].n;
       return n;
   }
-  function updateOwnerOnInsertConstructor_r11() private    {
-      address s = msg.sender;
-      owner = OwnerTuple(s,true);
+  function getTotalSupplyByPartition(uint q) public view  returns (uint) {
+      uint n = totalSupplyByPartition(q);
+      return n;
   }
-  function updateTotalSupplyByPartitionOnIncrementIssueTotalByPartition_r4(uint q,int i) private    {
-      int _delta = int(i);
-      uint newValue = updateuintByint(totalSupplyByPartition[q].n,_delta);
-      totalSupplyByPartition[q].n = newValue;
+  function updateRedeemTotalByPartitionOnInsertRedeemByPartition_r15(uint q,uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyByPartitionOnIncrementRedeemTotalByPartition_r4(q,delta0);
+      redeemTotalByPartition[q].n += n;
   }
-  function updateBalanceOfByPartitionOnIncrementTotalIn_r16(address p,uint q,int i) private    {
-      // Empty()
+  function updateBalanceOfByPartitionOnIncrementTotalBurn_r14(address p,uint q,int m) private    {
+      int _delta = int(-m);
+      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
+      balanceOfByPartition[p][q].n = newValue;
   }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
-  }
-  function updateBalanceOfByPartitionOnIncrementTotalOut_r16(address p,uint q,int o) private    {
-      // Empty()
-  }
-  function updateTotalSupplyByPartitionOnIncrementRedeemTotalByPartition_r4(uint q,int r) private    {
-      int _delta = int(-r);
-      uint newValue = updateuintByint(totalSupplyByPartition[q].n,_delta);
-      totalSupplyByPartition[q].n = newValue;
+  function totalSupplyByPartition(uint q) private view  returns (uint) {
+      uint r = redeemTotalByPartition[q].n;
+      uint i = issueTotalByPartition[q].n;
+      uint n = i-r;
+      return n;
   }
   function updateIssueByPartitionOnInsertRecv_issueByPartition_r1(address p,uint q,uint n) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
         if(p!=address(0)) {
+          updateTotalMintOnInsertIssueByPartition_r9(p,q,n);
           updateIssueTotalByPartitionOnInsertIssueByPartition_r5(q,n);
-          updateTotalMintOnInsertIssueByPartition_r8(p,q,n);
           updateAllMintOnInsertIssueByPartition_r0(n);
           emit IssueByPartition(p,q,n);
           return true;
@@ -120,96 +95,104 @@ contract TokenPartition {
       }
       return false;
   }
-  function updateAllBurnOnInsertRedeemByPartition_r10(uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllBurn_r7(delta0);
-      allBurn.n += n;
-  }
-  function updateTotalOutOnInsertTransferByPartition_r6(address p,uint q,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfByPartitionOnIncrementTotalOut_r16(p,q,delta0);
-      totalOut[p][q].n += n;
-  }
-  function totalSupply() private view  returns (uint) {
-      uint b = allBurn.n;
-      uint m = allMint.n;
-      uint n = m-b;
-      return n;
-  }
-  function updateTransferByPartitionOnInsertRecv_transferByPartition_r17(address r,uint q,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOfByPartition(s,q);
-      if(n<=m) {
-        updateTotalOutOnInsertTransferByPartition_r6(s,q,n);
-        updateTotalInOnInsertTransferByPartition_r15(r,q,n);
-        emit TransferByPartition(s,r,q,n);
-        return true;
+  function updateTransferByPartitionOnInsertRecv_transferByPartition_r6(address f,address r,uint q,uint n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        uint m = balanceOfByPartition[f][q].n;
+        if(n<=m) {
+          updateTotalInOnInsertTransferByPartition_r17(r,q,n);
+          updateTotalOutOnInsertTransferByPartition_r7(f,q,n);
+          emit TransferByPartition(f,r,q,n);
+          return true;
+        }
       }
       return false;
   }
-  function updateRedeemByPartitionOnInsertRecv_redeemByPartition_r9(address p,uint q,uint n) private   returns (bool) {
+  function updateIssueTotalByPartitionOnInsertIssueByPartition_r5(uint q,uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyByPartitionOnIncrementIssueTotalByPartition_r4(q,delta0);
+      issueTotalByPartition[q].n += n;
+  }
+  function updateTotalSupplyByPartitionOnIncrementIssueTotalByPartition_r4(uint q,int i) private    {
+      // Empty()
+  }
+  function updateBalanceOfByPartitionOnIncrementTotalIn_r14(address p,uint q,int i) private    {
+      int _delta = int(i);
+      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
+      balanceOfByPartition[p][q].n = newValue;
+  }
+  function updateTotalSupplyOnInsertConstructor_r3() private    {
+      totalSupply = TotalSupplyTuple(0,true);
+  }
+  function updateTotalOutOnInsertTransferByPartition_r7(address p,uint q,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfByPartitionOnIncrementTotalOut_r14(p,q,delta0);
+  }
+  function updateRedeemByPartitionOnInsertRecv_redeemByPartition_r10(address p,uint q,uint n) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
-        uint m = balanceOfByPartition(p,q);
+        uint m = balanceOfByPartition[p][q].n;
         if(p!=address(0) && n<=m) {
-          updateTotalBurnOnInsertRedeemByPartition_r14(p,q,n);
-          updateRedeemTotalByPartitionOnInsertRedeemByPartition_r13(q,n);
-          updateAllBurnOnInsertRedeemByPartition_r10(n);
+          updateAllBurnOnInsertRedeemByPartition_r11(n);
+          updateTotalBurnOnInsertRedeemByPartition_r16(p,q,n);
+          updateRedeemTotalByPartitionOnInsertRedeemByPartition_r15(q,n);
           emit RedeemByPartition(p,q,n);
           return true;
         }
       }
       return false;
   }
-  function updateTotalSupplyOnIncrementAllBurn_r7(int b) private    {
-      // Empty()
-  }
-  function updateTotalMintOnInsertIssueByPartition_r8(address p,uint q,uint n) private    {
+  function updateTotalMintOnInsertIssueByPartition_r9(address p,uint q,uint n) private    {
       int delta0 = int(n);
-      updateBalanceOfByPartitionOnIncrementTotalMint_r16(p,q,delta0);
-      totalMint[p][q].n += n;
-  }
-  function updateBalanceOfByPartitionOnIncrementTotalMint_r16(address p,uint q,int n) private    {
-      // Empty()
-  }
-  function updateRedeemTotalByPartitionOnInsertRedeemByPartition_r13(uint q,uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyByPartitionOnIncrementRedeemTotalByPartition_r4(q,delta0);
-  }
-  function updateTotalInOnInsertTransferByPartition_r15(address p,uint q,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfByPartitionOnIncrementTotalIn_r16(p,q,delta0);
-      totalIn[p][q].n += n;
-  }
-  function updateIssueTotalByPartitionOnInsertIssueByPartition_r5(uint q,uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyByPartitionOnIncrementIssueTotalByPartition_r4(q,delta0);
-  }
-  function updateTotalSupplyOnIncrementAllMint_r7(int m) private    {
-      // Empty()
-  }
-  function balanceOfByPartition(address p,uint q) private view  returns (uint) {
-      uint i = totalIn[p][q].n;
-      uint o = totalOut[p][q].n;
-      uint m = totalBurn[p][q].n;
-      uint n = totalMint[p][q].n;
-      uint s = ((n+i)-m)-o;
-      return s;
-  }
-  function updateTotalBurnOnInsertRedeemByPartition_r14(address p,uint q,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfByPartitionOnIncrementTotalBurn_r16(p,q,delta0);
-      totalBurn[p][q].n += n;
-  }
-  function updateTotalSupplyOnInsertConstructor_r3() private    {
-      // Empty()
-  }
-  function updateBalanceOfByPartitionOnIncrementTotalBurn_r16(address p,uint q,int m) private    {
-      // Empty()
+      updateBalanceOfByPartitionOnIncrementTotalMint_r14(p,q,delta0);
   }
   function updateAllMintOnInsertIssueByPartition_r0(uint n) private    {
       int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllMint_r7(delta0);
-      allMint.n += n;
+      updateTotalSupplyOnIncrementAllMint_r8(delta0);
+  }
+  function updateBalanceOfByPartitionOnIncrementTotalMint_r14(address p,uint q,int n) private    {
+      int _delta = int(n);
+      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
+      balanceOfByPartition[p][q].n = newValue;
+  }
+  function updateTotalSupplyOnIncrementAllBurn_r8(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
+  }
+  function updateTotalInOnInsertTransferByPartition_r17(address p,uint q,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfByPartitionOnIncrementTotalIn_r14(p,q,delta0);
+  }
+  function updateAllBurnOnInsertRedeemByPartition_r11(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllBurn_r8(delta0);
+  }
+  function updateTotalSupplyOnIncrementAllMint_r8(int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
+  }
+  function updateBalanceOfByPartitionOnIncrementTotalOut_r14(address p,uint q,int o) private    {
+      int _delta = int(-o);
+      uint newValue = updateuintByint(balanceOfByPartition[p][q].n,_delta);
+      balanceOfByPartition[p][q].n = newValue;
+  }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
+  }
+  function updateTotalSupplyByPartitionOnIncrementRedeemTotalByPartition_r4(uint q,int r) private    {
+      // Empty()
+  }
+  function updateOwnerOnInsertConstructor_r12() private    {
+      address s = msg.sender;
+      owner = OwnerTuple(s,true);
+  }
+  function updateTotalBurnOnInsertRedeemByPartition_r16(address p,uint q,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfByPartitionOnIncrementTotalBurn_r14(p,q,delta0);
   }
 }
