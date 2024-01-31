@@ -1,1 +1,1 @@
-operators,balanceOf,allowance,totalMint,totalIn,allowanceTotal,revokedDefaultOperator,totalBurn,spentTotal,totalSupply,allMint,allBurn,totalOut,defaultOperator,
+totalBurn,totalOut,balanceOf,totalMint,defaultOperator,allMint,allBurn,totalSupply,allowanceTotal,totalIn,spentTotal,operators,revokedDefaultOperator,allowance,

@@ -1,2 +1,2 @@
-released,shares,totalReceived,totalShares,
-released,totalReleased,shares,totalShares,thisBalance,,totalReceived
+totalReleased,released,totalShares,shares,thisBalance,,totalReceived
+shares,released,totalReceived,totalShares,
