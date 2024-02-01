@@ -15,10 +15,10 @@ contract Wallet {
     address p;
     bool _valid;
   }
-  mapping(address=>BalanceOfTuple) balanceOf;
   OwnerTuple owner;
-  AllBurnTuple allBurn;
   AllMintTuple allMint;
+  mapping(address=>BalanceOfTuple) balanceOf;
+  AllBurnTuple allBurn;
   event Transfer(address from,address to,int amount);
   constructor() public {
     updateOwnerOnInsertConstructor_r2();

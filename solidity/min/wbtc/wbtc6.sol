@@ -7,7 +7,7 @@ contract Wbtc {
     address p;
     bool _valid;
   }
-  struct TotalSupplyTuple {
+  struct AllMintTuple {
     uint n;
     bool _valid;
   }
@@ -16,6 +16,10 @@ contract Wbtc {
     bool _valid;
   }
   struct BalanceOfTuple {
+    uint n;
+    bool _valid;
+  }
+  struct AllBurnTuple {
     uint n;
     bool _valid;
   }
@@ -28,10 +32,11 @@ contract Wbtc {
     bool _valid;
   }
   PendingOwnerTuple pendingOwner;
-  TotalSupplyTuple totalSupply;
+  AllMintTuple allMint;
   TotalBalancesTuple totalBalances;
-  mapping(address=>BalanceOfTuple) balanceOf;
   OwnerTuple owner;
+  mapping(address=>BalanceOfTuple) balanceOf;
+  AllBurnTuple allBurn;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   PausedTuple paused;
   event TransferOwnership(address p);
@@ -53,10 +58,6 @@ contract Wbtc {
       if(r16==false) {
         revert("Rule condition failed");
       }
-  }
-  function getTotalSupply() public view  returns (uint) {
-      uint n = totalSupply.n;
-      return n;
   }
   function decreaseApproval(address p,uint n) public    {
       bool r23 = updateDecreaseAllowanceOnInsertRecv_decreaseApproval_r23(p,n);
@@ -102,6 +103,10 @@ contract Wbtc {
         revert("Rule condition failed");
       }
   }
+  function getTotalSupply() public view  returns (uint) {
+      uint n = totalSupply();
+      return n;
+  }
   function increaseApproval(address p,uint n) public    {
       bool r19 = updateIncreaseAllowanceOnInsertRecv_increaseApproval_r19(p,n);
       if(r19==false) {
@@ -143,9 +148,6 @@ contract Wbtc {
       }
       return false;
   }
-  function updateSendOnInsertReclaimToken_r24(address s,uint n) private    {
-      payable(s).send(n);
-  }
   function updateBalanceOfOnIncrementTotalMint_r8(address p,int n) private    {
       int _delta = int(n);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
@@ -156,14 +158,8 @@ contract Wbtc {
       updateTotalOutOnInsertTransfer_r25(t,n);
       emit Transfer(t,s,n);
   }
-  function updateAllowanceOnIncrementSpentTotal_r28(address o,address s,int l) private    {
-      int _delta = int(-l);
-      uint newValue = updateuintByint(allowance[o][s].n,_delta);
-      allowance[o][s].n = newValue;
-  }
-  function updateTotalOutOnInsertTransfer_r25(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalOut_r8(p,delta0);
+  function updateTotalSupplyOnInsertConstructor_r1() private    {
+      // Empty()
   }
   function updateTotalBalancesOnInsertConstructor_r35() private    {
       totalBalances = TotalBalancesTuple(0,true);
@@ -227,6 +223,15 @@ contract Wbtc {
       }
       return false;
   }
+  function totalSupply() private view  returns (uint) {
+      uint b = allBurn.n;
+      uint m = allMint.n;
+      uint n = m-b;
+      return n;
+  }
+  function updateSendOnInsertReclaimToken_r24(address s,uint n) private    {
+      payable(s).send(n);
+  }
   function updatePendingOwnerOnInsertClaimOwnership_r13() private    {
       pendingOwner = PendingOwnerTuple(address(0),true);
   }
@@ -240,9 +245,12 @@ contract Wbtc {
       return false;
   }
   function updateTotalSupplyOnIncrementAllBurn_r22(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
+      // Empty()
+  }
+  function updateAllowanceOnIncrementSpentTotal_r28(address o,address s,int l) private    {
+      int _delta = int(-l);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
   function updateDecreaseAllowanceTotalOnInsertDecreaseAllowance_r9(address o,address s,uint n) private    {
       int delta0 = int(n);
@@ -250,11 +258,6 @@ contract Wbtc {
   }
   function updatePendingOwnerOnInsertTransferOwnership_r6(address p) private    {
       pendingOwner = PendingOwnerTuple(p,true);
-  }
-  function updateTotalSupplyOnIncrementAllMint_r22(int m) private    {
-      int _delta = int(m);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
   }
   function updateOwnerOnInsertConstructor_r30() private    {
       address s = msg.sender;
@@ -312,6 +315,15 @@ contract Wbtc {
   function updateOwnerOnInsertClaimOwnership_r32(address s) private    {
       owner = OwnerTuple(s,true);
   }
+  function updateAllMintOnInsertMint_r18(uint n) private    {
+      int delta0 = int(n);
+      updateTotalSupplyOnIncrementAllMint_r22(delta0);
+      allMint.n += n;
+  }
+  function updateTotalOutOnInsertTransfer_r25(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalOut_r8(p,delta0);
+  }
   function updateMintOnInsertRecv_mint_r11(address p,uint n) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
@@ -330,11 +342,11 @@ contract Wbtc {
       uint convertedValue = uint(value);
       return convertedValue;
   }
+  function updateTotalSupplyOnIncrementAllMint_r22(int m) private    {
+      // Empty()
+  }
   function updatePausedOnInsertPause_r14(bool b) private    {
       paused = PausedTuple(b,true);
-  }
-  function updateTotalSupplyOnInsertConstructor_r1() private    {
-      totalSupply = TotalSupplyTuple(0,true);
   }
   function updateTotalInOnInsertTransfer_r12(address p,uint n) private    {
       int delta0 = int(n);
@@ -344,9 +356,10 @@ contract Wbtc {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalBurn_r8(p,delta0);
   }
-  function updateAllMintOnInsertMint_r18(uint n) private    {
+  function updateAllBurnOnInsertBurn_r31(uint n) private    {
       int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllMint_r22(delta0);
+      updateTotalSupplyOnIncrementAllBurn_r22(delta0);
+      allBurn.n += n;
   }
   function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
       updateTotalInOnInsertTransfer_r12(r,n);
@@ -377,9 +390,5 @@ contract Wbtc {
       int _delta = int(i);
       uint newValue = updateuintByint(balanceOf[p].n,_delta);
       balanceOf[p].n = newValue;
-  }
-  function updateAllBurnOnInsertBurn_r31(uint n) private    {
-      int delta0 = int(n);
-      updateTotalSupplyOnIncrementAllBurn_r22(delta0);
   }
 }

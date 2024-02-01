@@ -15,12 +15,12 @@ object Main extends App {
   val allBenchmarks = List(
     "crowFunding.dl",
     "erc20.dl",
-    "nft.dl",
+    //"nft.dl",
     "wallet.dl",
     "vestingWallet.dl",
-    "paymentSplitter.dl",
+    //"paymentSplitter.dl",
     "erc777.dl",
-     "erc1155.dl", // Lan: broke when run dependency-graph
+     //"erc1155.dl", // Lan: broke when run dependency-graph
     "controllable.dl",
     "tokenPartition.dl",
     "tether.dl",
