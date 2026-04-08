@@ -124,11 +124,11 @@ contract Tether {
   event Pause(bool b);
   constructor(uint n) public {
     updateBalanceOfOnInsertConstructor_r24(n);
-    updateOwnerOnInsertConstructor_r38();
+    updateOwnerOnInsertConstructor_r38(n);
     updateTotalBalancesOnInsertConstructor_r45(n);
-    updateRateOnInsertConstructor_r26();
-    updatePausedOnInsertConstructor_r5();
-    updateMaxFeeOnInsertConstructor_r43();
+    updatePausedOnInsertConstructor_r5(n);
+    updateRateOnInsertConstructor_r26(n);
+    updateMaxFeeOnInsertConstructor_r43(n);
     updateTotalSupplyOnInsertConstructor_r6(n);
   }
   function transferOwnership(address o) public    {
@@ -215,23 +215,14 @@ contract Tether {
         revert("Rule condition failed");
       }
   }
-  function updateOwnerOnInsertConstructor_r38() private    {
-      address s = msg.sender;
-      updateTransferFromWithoutFeeOnInsertOwner_r35(s);
-      updateTransferWithoutFeeOnInsertOwner_r7(s);
-      owner = OwnerTuple(s,true);
-  }
-  function updatePausedOnInsertPause_r22(bool p) private    {
-      paused = PausedTuple(p,true);
-  }
-  function updateAddBlackListOnInsertRecv_addBlackList_r18(address p) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        updateIsBlackListedOnInsertAddBlackList_r30(p);
-        emit AddBlackList(p);
-        return true;
+  function updateBalanceOfOnDeleteTotalRedeem_r20(address p,uint m) private    {
+      uint i = totalIn[p].n;
+      uint o = totalOut[p].n;
+      uint n = totalIssue[p].n;
+      uint s = ((n+i)-m)-o;
+      if(s==balanceOf[p].n) {
+        balanceOf[p] = BalanceOfTuple(0,false);
       }
-      return false;
   }
   function updateIsBlackListedOnInsertAddBlackList_r30(address p) private    {
       isBlackListed[p] = IsBlackListedTuple(true,true);
@@ -241,8 +232,16 @@ contract Tether {
       updateAllRedeemOnInsertRedeem_r9(n);
       emit Redeem(p,n);
   }
-  function updateMaxFeeOnInsertConstructor_r43() private    {
-      maxFee = MaxFeeTuple(0,true);
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
+  }
+  function updateTotalInOnInsertTransferWithoutFee_r12(address p,uint n) private    {
+      int delta1 = int(n);
+      updateBalanceOfOnIncrementTotalIn_r20(p,delta1);
+      totalIn[p].n += n;
   }
   function updateRemoveBlackListOnInsertRecv_removeBlackList_r36(address p) private   returns (bool) {
       address s = owner.p;
@@ -253,18 +252,8 @@ contract Tether {
       }
       return false;
   }
-  function updateDestroyBlackFundsOnInsertRecv_destroyBlackFunds_r13(address p) private   returns (bool) {
-      address s = msg.sender;
-      if(s==owner.p) {
-        uint n = balanceOf[p].n;
-        if(true==isBlackListed[p].b) {
-          if(p!=address(0) && n>0) {
-            updateRedeemOnInsertDestroyBlackFunds_r10(p,n);
-            return true;
-          }
-        }
-      }
-      return false;
+  function updateMaxFeeOnInsertConstructor_r43(uint _n0) private    {
+      maxFee = MaxFeeTuple(0,true);
   }
   function updateTotalRedeemOnInsertRedeem_r28(address p,uint n) private    {
       int delta0 = int(n);
@@ -276,20 +265,11 @@ contract Tether {
       uint newValue = updateuintByint(allowanceTotal[o][s].m,_delta);
       updateAllowanceOnInsertAllowanceTotal_r8(o,s,newValue);
   }
-  function updateBalanceOfOnDeleteTotalOut_r20(address p,uint o) private    {
-      uint i = totalIn[p].n;
-      uint m = totalRedeem[p].n;
-      uint n = totalIssue[p].n;
-      uint s = ((n+i)-m)-o;
-      if(s==balanceOf[p].n) {
-        balanceOf[p] = BalanceOfTuple(0,false);
-      }
-  }
-  function updateTransferWithoutFeeOnInsertTransferWithFee_r7(address s,address r,uint f) private    {
-      address o = owner.p;
-      updateTotalInOnInsertTransferWithoutFee_r12(o,f);
-      updateTotalOutOnInsertTransferWithoutFee_r14(s,f);
-      transferWithoutFee = TransferWithoutFeeTuple(s,o,f,true);
+  function updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r35(address o,address r,address s,uint f,uint _amount4) private    {
+      address p = owner.p;
+      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,p,s,f);
+      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,f);
+      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,p,s,f,true);
   }
   function updateTotalIssueOnInsertIssue_r37(address p,uint n) private    {
       int delta1 = int(n);
@@ -318,25 +298,6 @@ contract Tether {
       int _delta = int(o);
       uint newValue = updateuintByint(totalOut[p].n,_delta);
       updateBalanceOfOnInsertTotalOut_r20(p,newValue);
-  }
-  function updateBalanceOfOnDeleteTotalRedeem_r20(address p,uint m) private    {
-      uint i = totalIn[p].n;
-      uint o = totalOut[p].n;
-      uint n = totalIssue[p].n;
-      uint s = ((n+i)-m)-o;
-      if(s==balanceOf[p].n) {
-        balanceOf[p] = BalanceOfTuple(0,false);
-      }
-  }
-  function updateTransferFromWithFeeOnInsertTransferFrom_r16(address o,address r,address s,uint f,uint n) private    {
-      updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r35(o,r,s,f);
-      updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r2(o,r,s,f,n);
-      transferFromWithFee = TransferFromWithFeeTuple(o,r,s,f,n,true);
-  }
-  function updateTransferWithFeeOnInsertTransfer_r29(address s,address r,uint f,uint n) private    {
-      updateTransferWithoutFeeOnInsertTransferWithFee_r41(s,r,f,n);
-      updateTransferWithoutFeeOnInsertTransferWithFee_r7(s,r,f);
-      transferWithFee = TransferWithFeeTuple(s,r,f,n,true);
   }
   function updateIsBlackListedOnInsertRemoveBlackList_r39(address p) private    {
       isBlackListed[p] = IsBlackListedTuple(false,true);
@@ -383,12 +344,6 @@ contract Tether {
         allowance[o][s] = AllowanceTuple(0,false);
       }
   }
-  function updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r35(address o,address r,address s,uint f) private    {
-      address p = owner.p;
-      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,p,f);
-      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,f);
-      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,p,s,f,true);
-  }
   function updateTotalSupplyOnIncrementAllRedeem_r11(int b) private    {
       int _delta = int(b);
       uint newValue = updateuintByint(allRedeem.n,_delta);
@@ -428,6 +383,27 @@ contract Tether {
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
   }
+  function updatePausedOnInsertPause_r22(bool p) private    {
+      paused = PausedTuple(p,true);
+  }
+  function updatePausedOnInsertConstructor_r5(uint _n0) private    {
+      paused = PausedTuple(false,true);
+  }
+  function updateOwnerOnInsertConstructor_r38(uint _n0) private    {
+      address s = msg.sender;
+      updateTransferFromWithoutFeeOnInsertOwner_r35(s);
+      updateTransferWithoutFeeOnInsertOwner_r7(s);
+      owner = OwnerTuple(s,true);
+  }
+  function updateAddBlackListOnInsertRecv_addBlackList_r18(address p) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        updateIsBlackListedOnInsertAddBlackList_r30(p);
+        emit AddBlackList(p);
+        return true;
+      }
+      return false;
+  }
   function updateTransferWithoutFeeOnInsertTransferWithFee_r41(address s,address r,uint f,uint n) private    {
       uint m = n-f;
       updateTotalInOnInsertTransferWithoutFee_r12(r,m);
@@ -451,6 +427,9 @@ contract Tether {
         balanceOf[p] = BalanceOfTuple(0,false);
       }
   }
+  function updateRateOnInsertConstructor_r26(uint _n0) private    {
+      rate = RateTuple(0,true);
+  }
   function updateBalanceOfOnIncrementTotalIn_r20(address p,int i) private    {
       int _delta = int(i);
       uint newValue = updateuintByint(totalIn[p].n,_delta);
@@ -468,11 +447,13 @@ contract Tether {
         allowance[o][s] = AllowanceTuple(0,false);
       }
   }
+  function updateTransferFromWithFeeOnInsertTransferFrom_r16(address o,address r,address s,uint f,uint n) private    {
+      updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r35(o,r,s,f,n);
+      updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r2(o,r,s,f,n);
+      transferFromWithFee = TransferFromWithFeeTuple(o,r,s,f,n,true);
+  }
   function updateTotalBalancesOnInsertConstructor_r45(uint n) private    {
       // Empty()
-  }
-  function updateRateOnInsertSetParams_r21(uint b) private    {
-      rate = RateTuple(b,true);
   }
   function updatePauseOnInsertRecv_pause_r40() private   returns (bool) {
       if(false==paused.b) {
@@ -501,23 +482,26 @@ contract Tether {
       uint newValue = updateuintByint(totalRedeem[p].n,_delta);
       updateBalanceOfOnInsertTotalRedeem_r20(p,newValue);
   }
-  function updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r2(address o,address r,address s,uint f,uint n) private    {
-      uint m = n-f;
-      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,r,m);
-      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,m);
-      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,r,s,m,true);
-  }
   function updateSetParamsOnInsertRecv_setParams_r17(uint b,uint f) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
         if(b<20 && f<50) {
-          updateMaxFeeOnInsertSetParams_r15(f);
-          updateRateOnInsertSetParams_r21(b);
+          updateRateOnInsertSetParams_r21(b,f);
+          updateMaxFeeOnInsertSetParams_r15(b,f);
           emit SetParams(b,f);
           return true;
         }
       }
       return false;
+  }
+  function updateTransferFromWithoutFeeOnInsertOwner_r35(address p) private    {
+      address o = transferFromWithFee.from;
+      address r = transferFromWithFee.to;
+      address s = transferFromWithFee.spender;
+      uint f = transferFromWithFee.fee;
+      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,p,s,f);
+      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,f);
+      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,p,s,f,true);
   }
   function updateBalanceOfOnInsertTotalIssue_r20(address p,uint n) private    {
       TotalIssueTuple memory toDelete = totalIssue[p];
@@ -529,15 +513,6 @@ contract Tether {
       uint m = totalRedeem[p].n;
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
-  }
-  function updateTransferFromWithoutFeeOnInsertOwner_r35(address p) private    {
-      address o = transferFromWithFee.from;
-      address r = transferFromWithFee.to;
-      address s = transferFromWithFee.spender;
-      uint f = transferFromWithFee.fee;
-      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,p,f);
-      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,f);
-      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,p,s,f,true);
   }
   function updateAllowanceOnInsertSpentTotal_r8(address o,address s,uint l) private    {
       SpentTotalTuple memory toDelete = spentTotal[o][s];
@@ -555,17 +530,6 @@ contract Tether {
       updateTotalInOnInsertTransferWithoutFee_r12(o,f);
       updateTotalOutOnInsertTransferWithoutFee_r14(s,f);
       transferWithoutFee = TransferWithoutFeeTuple(s,o,f,true);
-  }
-  function updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(address o,address r,uint n) private    {
-      updateTotalOutOnInsertTransferWithoutFee_r14(o,n);
-      updateTotalInOnInsertTransferWithoutFee_r12(r,n);
-      transferWithoutFee = TransferWithoutFeeTuple(o,r,n,true);
-  }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
   }
   function updateUnpauseOnInsertRecv_unpause_r4() private   returns (bool) {
       if(true==paused.b) {
@@ -602,6 +566,11 @@ contract Tether {
       updateTransferWithoutFeeOnInsertOwner_r7(s);
       owner = OwnerTuple(s,true);
   }
+  function updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(address o,address r,address _spender2,uint n) private    {
+      updateTotalOutOnInsertTransferWithoutFee_r14(o,n);
+      updateTotalInOnInsertTransferWithoutFee_r12(r,n);
+      transferWithoutFee = TransferWithoutFeeTuple(o,r,n,true);
+  }
   function updateAllowanceTotalOnInsertIncreaseAllowance_r46(address o,address s,uint n) private    {
       int delta2 = int(n);
       updateAllowanceOnIncrementAllowanceTotal_r8(o,s,delta2);
@@ -612,13 +581,8 @@ contract Tether {
       uint newValue = updateuintByint(allIssue.n,_delta);
       updateTotalSupplyOnInsertAllIssue_r11(newValue);
   }
-  function updateTotalInOnInsertTransferWithoutFee_r12(address p,uint n) private    {
-      int delta1 = int(n);
-      updateBalanceOfOnIncrementTotalIn_r20(p,delta1);
-      totalIn[p].n += n;
-  }
-  function updatePausedOnInsertConstructor_r5() private    {
-      paused = PausedTuple(false,true);
+  function updateMaxFeeOnInsertSetParams_r15(uint _b0,uint f) private    {
+      maxFee = MaxFeeTuple(f,true);
   }
   function updateIssueOnInsertRecv_issue_r33(uint n) private   returns (bool) {
       address s = owner.p;
@@ -667,10 +631,46 @@ contract Tether {
       uint newValue = updateuintByint(totalIssue[p].n,_delta);
       updateBalanceOfOnInsertTotalIssue_r20(p,newValue);
   }
-  function updateRateOnInsertConstructor_r26() private    {
-      rate = RateTuple(0,true);
+  function updateDestroyBlackFundsOnInsertRecv_destroyBlackFunds_r13(address p) private   returns (bool) {
+      address s = msg.sender;
+      if(s==owner.p) {
+        uint n = balanceOf[p].n;
+        if(true==isBlackListed[p].b) {
+          if(p!=address(0) && n>0) {
+            updateRedeemOnInsertDestroyBlackFunds_r10(p,n);
+            return true;
+          }
+        }
+      }
+      return false;
   }
-  function updateMaxFeeOnInsertSetParams_r15(uint f) private    {
-      maxFee = MaxFeeTuple(f,true);
+  function updateTransferFromWithoutFeeOnInsertTransferFromWithFee_r2(address o,address r,address s,uint f,uint n) private    {
+      uint m = n-f;
+      updateTransferWithoutFeeOnInsertTransferFromWithoutFee_r19(o,r,s,m);
+      updateSpentTotalOnInsertTransferFromWithoutFee_r23(o,s,m);
+      transferFromWithoutFee = TransferFromWithoutFeeTuple(o,r,s,m,true);
+  }
+  function updateBalanceOfOnDeleteTotalOut_r20(address p,uint o) private    {
+      uint i = totalIn[p].n;
+      uint m = totalRedeem[p].n;
+      uint n = totalIssue[p].n;
+      uint s = ((n+i)-m)-o;
+      if(s==balanceOf[p].n) {
+        balanceOf[p] = BalanceOfTuple(0,false);
+      }
+  }
+  function updateTransferWithoutFeeOnInsertTransferWithFee_r7(address s,address r,uint f,uint _amount3) private    {
+      address o = owner.p;
+      updateTotalInOnInsertTransferWithoutFee_r12(o,f);
+      updateTotalOutOnInsertTransferWithoutFee_r14(s,f);
+      transferWithoutFee = TransferWithoutFeeTuple(s,o,f,true);
+  }
+  function updateRateOnInsertSetParams_r21(uint b,uint _f1) private    {
+      rate = RateTuple(b,true);
+  }
+  function updateTransferWithFeeOnInsertTransfer_r29(address s,address r,uint f,uint n) private    {
+      updateTransferWithoutFeeOnInsertTransferWithFee_r41(s,r,f,n);
+      updateTransferWithoutFeeOnInsertTransferWithFee_r7(s,r,f,n);
+      transferWithFee = TransferWithFeeTuple(s,r,f,n,true);
   }
 }

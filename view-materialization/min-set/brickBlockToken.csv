@@ -1,0 +1,8 @@
+totalIn,onceUpgrade,BrickblockToken,onceEndSale,dead,bonusShare,paused,onceUnpaused,successorAddress,totalOut,this,owner,tokenSaleActive,allowed,,balances,initialSupply
+onceUpgrade,balances,dead,onceUnpaused,tokenSaleActive,owner,initialSupply,onceEndSale,decreaseTotal,bonusShare,successorAddress,this,spentTotal,allowanceTotal,paused,,allowed
+onceUpgrade,balances,dead,onceUnpaused,tokenSaleActive,owner,BrickblockToken,onceEndSale,decreaseTotal,bonusShare,successorAddress,this,spentTotal,allowanceTotal,paused,,initialSupply,allowed
+onceUpgrade,BrickblockToken,balances,onceEndSale,dead,bonusShare,paused,onceUnpaused,successorAddress,this,owner,tokenSaleActive,allowed,,initialSupply
+totalIn,initialSupply,onceUpgrade,onceEndSale,dead,bonusShare,paused,onceUnpaused,successorAddress,totalOut,this,owner,tokenSaleActive,allowed,,balances
+onceUpgrade,dead,onceUnpaused,totalOut,tokenSaleActive,owner,totalIn,initialSupply,onceEndSale,decreaseTotal,bonusShare,successorAddress,this,spentTotal,allowanceTotal,paused,,balances,allowed
+initialSupply,onceUpgrade,balances,onceEndSale,dead,bonusShare,paused,onceUnpaused,successorAddress,this,owner,tokenSaleActive,allowed,
+onceUpgrade,dead,onceUnpaused,totalOut,tokenSaleActive,owner,totalIn,BrickblockToken,onceEndSale,decreaseTotal,bonusShare,successorAddress,this,spentTotal,allowanceTotal,paused,,balances,initialSupply,allowed

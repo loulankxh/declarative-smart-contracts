@@ -43,11 +43,11 @@ contract CrowFunding {
   event Invest(address p,uint n);
   event Withdraw(address p,uint n);
   constructor(uint t,address b) public {
-    updateRaisedOnInsertConstructor_r6();
-    updateBeneficiaryOnInsertConstructor_r16(b);
-    updateTotalBalanceOnInsertConstructor_r12();
-    updateOwnerOnInsertConstructor_r7();
-    updateTargetOnInsertConstructor_r11(t);
+    updateRaisedOnInsertConstructor_r6(t,b);
+    updateTotalBalanceOnInsertConstructor_r12(t,b);
+    updateBeneficiaryOnInsertConstructor_r16(t,b);
+    updateOwnerOnInsertConstructor_r7(t,b);
+    updateTargetOnInsertConstructor_r11(t,b);
   }
   function getClosed() public view  returns (bool) {
       bool b = closed.b;
@@ -81,11 +81,26 @@ contract CrowFunding {
       uint n = raised.n;
       return n;
   }
-  function updateBeneficiaryOnInsertConstructor_r16(address p) private    {
+  function updateTotalBalanceOnInsertConstructor_r12(uint _t0,address _b1) private    {
+      totalBalance = TotalBalanceTuple(0,true);
+  }
+  function updateBeneficiaryOnInsertConstructor_r16(uint _t0,address p) private    {
       beneficiary = BeneficiaryTuple(p,true);
   }
-  function updateTargetOnInsertConstructor_r11(uint t) private    {
-      target = TargetTuple(t,true);
+  function updateRefundOnInsertRecv_refund_r3() private   returns (bool) {
+      if(true==closed.b) {
+        address p = msg.sender;
+        uint t = target.t;
+        uint r = raised.n;
+        uint n = balanceOf(p);
+        if(r<t && n>0) {
+          updateRefundTotalOnInsertRefund_r14(p,n);
+          updateSendOnInsertRefund_r1(p,n);
+          emit Refund(p,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updateSendOnInsertRefund_r1(address p,uint n) private    {
       payable(p).send(n);
@@ -107,9 +122,6 @@ contract CrowFunding {
   function updateSendOnInsertWithdraw_r0(address p,uint r) private    {
       payable(p).send(r);
   }
-  function updateRaisedOnInsertConstructor_r6() private    {
-      raised = RaisedTuple(0,true);
-  }
   function updateWithdrawOnInsertRecv_withdraw_r8() private   returns (bool) {
       address p = beneficiary.p;
       uint t = target.t;
@@ -123,26 +135,8 @@ contract CrowFunding {
       }
       return false;
   }
-  function updateRaisedOnInsertInvest_r13(uint m) private    {
-      raised.n += m;
-  }
-  function updateTotalBalanceOnInsertConstructor_r12() private    {
-      totalBalance = TotalBalanceTuple(0,true);
-  }
-  function updateRefundOnInsertRecv_refund_r3() private   returns (bool) {
-      if(true==closed.b) {
-        address p = msg.sender;
-        uint t = target.t;
-        uint r = raised.n;
-        uint n = balanceOf(p);
-        if(r<t && n>0) {
-          updateRefundTotalOnInsertRefund_r14(p,n);
-          updateSendOnInsertRefund_r1(p,n);
-          emit Refund(p,n);
-          return true;
-        }
-      }
-      return false;
+  function updateBalanceOfOnIncrementInvestTotal_r2(address p,int i) private    {
+      // Empty()
   }
   function balanceOf(address p) private view  returns (uint) {
       uint r = refundTotal[p].n;
@@ -157,6 +151,13 @@ contract CrowFunding {
         return true;
       }
       return false;
+  }
+  function updateRaisedOnInsertConstructor_r6(uint _t0,address _b1) private    {
+      raised = RaisedTuple(0,true);
+  }
+  function updateOwnerOnInsertConstructor_r7(uint _t0,address _b1) private    {
+      address p = msg.sender;
+      owner = OwnerTuple(p,true);
   }
   function updateRefundTotalOnInsertRefund_r14(address p,uint m) private    {
       int delta0 = int(m);
@@ -178,11 +179,10 @@ contract CrowFunding {
       }
       return false;
   }
-  function updateBalanceOfOnIncrementInvestTotal_r2(address p,int i) private    {
-      // Empty()
+  function updateRaisedOnInsertInvest_r13(uint m) private    {
+      raised.n += m;
   }
-  function updateOwnerOnInsertConstructor_r7() private    {
-      address p = msg.sender;
-      owner = OwnerTuple(p,true);
+  function updateTargetOnInsertConstructor_r11(uint t,address _b1) private    {
+      target = TargetTuple(t,true);
   }
 }

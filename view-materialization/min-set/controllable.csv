@@ -1,8 +1,8 @@
-controller,name,symbol,decimals,balanceOf,totalSupply,totalBalances,allowance,
-controller,totalBurn,totalMint,name,symbol,totalIn,decimals,totalOut,totalSupply,totalBalances,allowance,,balanceOf
-allMint,controller,totalBurn,totalMint,allBurn,name,symbol,totalIn,decimals,totalOut,totalBalances,allowance,,totalSupply,balanceOf
-allMint,controller,increaseAllowanceTotal,allBurn,name,symbol,decimals,balanceOf,decreaseAllowanceTotal,totalBalances,spentTotal,,totalSupply,allowance
-controller,increaseAllowanceTotal,name,symbol,decimals,decreaseAllowanceTotal,balanceOf,totalSupply,totalBalances,spentTotal,,allowance
-controller,totalBurn,totalMint,increaseAllowanceTotal,name,symbol,totalIn,decimals,decreaseAllowanceTotal,totalOut,totalSupply,totalBalances,spentTotal,,allowance,balanceOf
-allMint,controller,totalBurn,totalMint,increaseAllowanceTotal,allBurn,name,symbol,totalIn,decimals,decreaseAllowanceTotal,totalOut,totalBalances,spentTotal,,balanceOf,totalSupply,allowance
-allMint,controller,allBurn,name,symbol,decimals,balanceOf,totalBalances,allowance,,totalSupply
+spentTotal,balanceOf,decimals,symbol,controller,decreaseAllowanceTotal,increaseAllowanceTotal,totalSupply,totalBalances,name,,allowance
+totalBalances,spentTotal,balanceOf,decimals,controller,decreaseAllowanceTotal,allMint,increaseAllowanceTotal,symbol,allBurn,name,,totalSupply,allowance
+totalIn,totalBalances,totalMint,decimals,allowance,controller,totalOut,totalBurn,allMint,symbol,allBurn,name,,totalSupply,balanceOf
+allBurn,balanceOf,decimals,allowance,controller,allMint,symbol,totalBalances,name,,totalSupply
+totalIn,totalBalances,totalMint,decimals,controller,decreaseAllowanceTotal,totalOut,totalBurn,totalSupply,increaseAllowanceTotal,symbol,spentTotal,name,,balanceOf,allowance
+totalIn,totalMint,decimals,allowance,controller,totalOut,totalSupply,totalBurn,symbol,totalBalances,name,,balanceOf
+totalIn,totalBalances,spentTotal,totalMint,decimals,controller,decreaseAllowanceTotal,totalOut,totalBurn,allMint,increaseAllowanceTotal,symbol,allBurn,name,,totalSupply,balanceOf,allowance
+balanceOf,allowance,decimals,symbol,controller,totalSupply,totalBalances,name,

@@ -44,9 +44,9 @@ contract Auction {
   event Send(address p,uint amount);
   event Bid(address bidder,uint amount);
   constructor(address beneficiary,uint biddingTime) public {
-    updateEndTimeOnInsertConstructor_r15(biddingTime);
-    updateBeneficiaryOnInsertConstructor_r11(beneficiary);
-    updateOwnerOnInsertConstructor_r9();
+    updateOwnerOnInsertConstructor_r9(beneficiary,biddingTime);
+    updateBeneficiaryOnInsertConstructor_r11(beneficiary,biddingTime);
+    updateEndTimeOnInsertConstructor_r15(beneficiary,biddingTime);
   }
   function bid() public  payable  {
       bool r10 = updateBidOnInsertRecv_bid_r10();
@@ -155,15 +155,16 @@ contract Auction {
       }
       return false;
   }
+  function updateEndTimeOnInsertConstructor_r15(address _beneficiary0,uint d) private    {
+      uint t = block.timestamp;
+      uint t2 = t+d;
+      endTime = EndTimeTuple(t2,true);
+  }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
       int value = convertedX+delta;
       uint convertedValue = uint(value);
       return convertedValue;
-  }
-  function updateOwnerOnInsertConstructor_r9() private    {
-      address s = msg.sender;
-      owner = OwnerTuple(s,true);
   }
   function updateBalanceOnIncrementWithdrawTotal_r7(address p,int w) private    {
       int _delta = int(w);
@@ -194,30 +195,6 @@ contract Auction {
       }
       return false;
   }
-  function updateBalanceOnIncrementBidTotal_r7(address p,int b) private    {
-      int _delta = int(b);
-      uint newValue = updateuintByint(bidTotal[p].n,_delta);
-      updateBalanceOnInsertBidTotal_r7(p,newValue);
-  }
-  function updateWithdrawTotalOnInsertWithdraw_r4(address p,uint m) private    {
-      int delta0 = int(m);
-      updateBalanceOnIncrementWithdrawTotal_r7(p,delta0);
-      withdrawTotal[p].n += m;
-  }
-  function updateEndTimeOnInsertConstructor_r15(uint d) private    {
-      uint t = block.timestamp;
-      uint t2 = t+d;
-      endTime = EndTimeTuple(t2,true);
-  }
-  function updateSendOnInsertWithdraw_r8(address p,uint n) private    {
-      payable(p).send(n);
-      emit Send(p,n);
-  }
-  function updateEndOnInsertEndAuction_r0(bool p) private    {
-      if(p==true) {
-        end = EndTuple(true,true);
-      }
-  }
   function updateWithdrawOnInsertRecv_withdraw_r5() private   returns (bool) {
       if(true==end.b) {
         address h = highestBid.bidder;
@@ -231,7 +208,30 @@ contract Auction {
       }
       return false;
   }
-  function updateBeneficiaryOnInsertConstructor_r11(address p) private    {
+  function updateSendOnInsertWithdraw_r8(address p,uint n) private    {
+      payable(p).send(n);
+      emit Send(p,n);
+  }
+  function updateEndOnInsertEndAuction_r0(bool p) private    {
+      if(p==true) {
+        end = EndTuple(true,true);
+      }
+  }
+  function updateBeneficiaryOnInsertConstructor_r11(address p,uint _biddingTime1) private    {
       beneficiary = BeneficiaryTuple(p,true);
+  }
+  function updateBalanceOnIncrementBidTotal_r7(address p,int b) private    {
+      int _delta = int(b);
+      uint newValue = updateuintByint(bidTotal[p].n,_delta);
+      updateBalanceOnInsertBidTotal_r7(p,newValue);
+  }
+  function updateWithdrawTotalOnInsertWithdraw_r4(address p,uint m) private    {
+      int delta0 = int(m);
+      updateBalanceOnIncrementWithdrawTotal_r7(p,delta0);
+      withdrawTotal[p].n += m;
+  }
+  function updateOwnerOnInsertConstructor_r9(address _beneficiary0,uint _biddingTime1) private    {
+      address s = msg.sender;
+      owner = OwnerTuple(s,true);
   }
 }

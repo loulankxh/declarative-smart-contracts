@@ -156,7 +156,17 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
       require(_lits.size == 1, s"Only support rules where each relation appears at most once: $rule.")
     }
     //require(_lits.size == 1, s"Only support rules where each relation appears at most once: $rule.")
-    _lits.head
+    val lit = _lits.head
+    /** Rename wildcard _ to named variables so they can be passed as function parameters.
+     *  Same approach as CountView.getInsertedLiteral. */
+    // Lan: solve "_" delete problem in function parameters, e.g., wins(_, b) in voting.dl
+    val memberNames = relation.memberNames
+    val fields = lit.fields.zipWithIndex.map {
+      case (p, i) =>
+        if (p.name == "_") Variable(p._type, s"_${memberNames(i)}$i")
+        else p
+    }
+    Literal(relation, fields)
   }
 
   private def sortJoinLiterals(literals: Set[Literal]): List[Literal] = {

@@ -32,7 +32,16 @@ object Main extends App {
     "shib.dl",
     "linktoken.dl",
     // "voting.dl",
-    "auction.dl")
+    "auction.dl",
+    "brickBlockToken.dl",
+    "cappedCrowdSale.dl",
+    "finalizableCrowdSale.dl",
+    "nft.dl",
+    "paymentSplitter.dl",
+    "stbt.dl",
+    "theta.dl",
+    "voting.dl"
+    )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {
     if (isFileExists(filepath)) {

@@ -43,11 +43,11 @@ contract CrowFunding {
   event Invest(address p,uint n);
   event Withdraw(address p,uint n);
   constructor(uint t,address b) public {
-    updateRaisedOnInsertConstructor_r6();
-    updateBeneficiaryOnInsertConstructor_r16(b);
-    updateTotalBalanceOnInsertConstructor_r12();
-    updateOwnerOnInsertConstructor_r7();
-    updateTargetOnInsertConstructor_r11(t);
+    updateRaisedOnInsertConstructor_r6(t,b);
+    updateTotalBalanceOnInsertConstructor_r12(t,b);
+    updateBeneficiaryOnInsertConstructor_r16(t,b);
+    updateOwnerOnInsertConstructor_r7(t,b);
+    updateTargetOnInsertConstructor_r11(t,b);
   }
   function getClosed() public view  returns (bool) {
       bool b = closed.b;
@@ -81,11 +81,8 @@ contract CrowFunding {
       uint n = raised.n;
       return n;
   }
-  function updateBeneficiaryOnInsertConstructor_r16(address p) private    {
+  function updateBeneficiaryOnInsertConstructor_r16(uint _t0,address p) private    {
       beneficiary = BeneficiaryTuple(p,true);
-  }
-  function updateTargetOnInsertConstructor_r11(uint t) private    {
-      target = TargetTuple(t,true);
   }
   function updateRefundOnInsertRecv_refund_r3() private   returns (bool) {
       if(true==closed.b) {
@@ -112,14 +109,17 @@ contract CrowFunding {
         balanceOf[p] = BalanceOfTuple(0,false);
       }
   }
-  function updateuintByint(uint x,int delta) private   returns (uint) {
-      int convertedX = int(x);
-      int value = convertedX+delta;
-      uint convertedValue = uint(value);
-      return convertedValue;
-  }
   function updateSendOnInsertWithdraw_r0(address p,uint r) private    {
       payable(p).send(r);
+  }
+  function updateBalanceOfOnInsertRefundTotal_r2(address p,uint r) private    {
+      RefundTotalTuple memory toDelete = refundTotal[p];
+      if(toDelete._valid==true) {
+        updateBalanceOfOnDeleteRefundTotal_r2(p,toDelete.n);
+      }
+      uint i = investTotal[p].n;
+      uint s = i-r;
+      balanceOf[p] = BalanceOfTuple(s,true);
   }
   function updateWithdrawOnInsertRecv_withdraw_r8() private   returns (bool) {
       address p = beneficiary.p;
@@ -139,10 +139,6 @@ contract CrowFunding {
       uint newValue = updateuintByint(investTotal[p].n,_delta);
       updateBalanceOfOnInsertInvestTotal_r2(p,newValue);
   }
-  function updateOwnerOnInsertConstructor_r7() private    {
-      address p = msg.sender;
-      owner = OwnerTuple(p,true);
-  }
   function updateBalanceOfOnInsertInvestTotal_r2(address p,uint i) private    {
       InvestTotalTuple memory toDelete = investTotal[p];
       if(toDelete._valid==true) {
@@ -151,9 +147,6 @@ contract CrowFunding {
       uint r = refundTotal[p].n;
       uint s = i-r;
       balanceOf[p] = BalanceOfTuple(s,true);
-  }
-  function updateTotalBalanceOnInsertConstructor_r12() private    {
-      // Empty()
   }
   function updateClosedOnInsertRecv_close_r9() private   returns (bool) {
       address s = owner.p;
@@ -167,6 +160,22 @@ contract CrowFunding {
       int delta2 = int(m);
       updateBalanceOfOnIncrementInvestTotal_r2(p,delta2);
       investTotal[p].n += m;
+  }
+  function updateuintByint(uint x,int delta) private   returns (uint) {
+      int convertedX = int(x);
+      int value = convertedX+delta;
+      uint convertedValue = uint(value);
+      return convertedValue;
+  }
+  function updateTotalBalanceOnInsertConstructor_r12(uint _t0,address _b1) private    {
+      // Empty()
+  }
+  function updateRaisedOnInsertConstructor_r6(uint _t0,address _b1) private    {
+      raised = RaisedTuple(0,true);
+  }
+  function updateOwnerOnInsertConstructor_r7(uint _t0,address _b1) private    {
+      address p = msg.sender;
+      owner = OwnerTuple(p,true);
   }
   function updateRefundTotalOnInsertRefund_r14(address p,uint m) private    {
       int delta0 = int(m);
@@ -193,18 +202,6 @@ contract CrowFunding {
       uint newValue = updateuintByint(refundTotal[p].n,_delta);
       updateBalanceOfOnInsertRefundTotal_r2(p,newValue);
   }
-  function updateBalanceOfOnInsertRefundTotal_r2(address p,uint r) private    {
-      RefundTotalTuple memory toDelete = refundTotal[p];
-      if(toDelete._valid==true) {
-        updateBalanceOfOnDeleteRefundTotal_r2(p,toDelete.n);
-      }
-      uint i = investTotal[p].n;
-      uint s = i-r;
-      balanceOf[p] = BalanceOfTuple(s,true);
-  }
-  function updateRaisedOnInsertConstructor_r6() private    {
-      raised = RaisedTuple(0,true);
-  }
   function updateBalanceOfOnDeleteRefundTotal_r2(address p,uint r) private    {
       uint i = investTotal[p].n;
       uint s = i-r;
@@ -214,5 +211,8 @@ contract CrowFunding {
   }
   function updateRaisedOnInsertInvest_r13(uint m) private    {
       raised.n += m;
+  }
+  function updateTargetOnInsertConstructor_r11(uint t,address _b1) private    {
+      target = TargetTuple(t,true);
   }
 }

@@ -1,8 +1,8 @@
-this,paused,allowanceTotal,totalSupply,decreaseAllowanceTotal,owner,balanceOf,totalBalances,pendingOwner,spentTotal,,allowance
-this,totalBurn,paused,totalMint,allowanceTotal,totalIn,totalBalances,totalSupply,decreaseAllowanceTotal,owner,totalOut,pendingOwner,spentTotal,,allowance,balanceOf
-allMint,this,paused,allBurn,balanceOf,owner,totalBalances,pendingOwner,allowance,,totalSupply
-allMint,this,owner,paused,allowanceTotal,allBurn,totalBalances,decreaseAllowanceTotal,balanceOf,pendingOwner,spentTotal,,totalSupply,allowance
-allMint,this,totalBurn,paused,totalMint,allBurn,totalIn,totalBalances,totalOut,owner,pendingOwner,allowance,,totalSupply,balanceOf
-allMint,this,totalBurn,paused,totalMint,allowanceTotal,allBurn,totalIn,totalBalances,decreaseAllowanceTotal,owner,totalOut,pendingOwner,spentTotal,,balanceOf,totalSupply,allowance
-this,totalBurn,paused,totalMint,totalIn,totalBalances,totalSupply,totalOut,owner,pendingOwner,allowance,,balanceOf
-this,paused,totalSupply,balanceOf,owner,totalBalances,pendingOwner,allowance,
+totalIn,totalMint,allowance,totalOut,this,owner,pendingOwner,totalBurn,totalSupply,totalBalances,paused,,balanceOf
+totalIn,totalBalances,totalMint,totalOut,decreaseAllowanceTotal,this,owner,pendingOwner,totalBurn,totalSupply,spentTotal,allowanceTotal,paused,,balanceOf,allowance
+totalBalances,pendingOwner,spentTotal,balanceOf,decreaseAllowanceTotal,this,owner,allMint,allBurn,allowanceTotal,paused,,totalSupply,allowance
+totalIn,totalBalances,pendingOwner,spentTotal,totalMint,totalOut,decreaseAllowanceTotal,this,owner,allMint,totalBurn,allBurn,allowanceTotal,paused,,totalSupply,balanceOf,allowance
+totalIn,totalBalances,pendingOwner,totalMint,allowance,totalOut,this,owner,allMint,totalBurn,allBurn,paused,,totalSupply,balanceOf
+spentTotal,balanceOf,decreaseAllowanceTotal,this,owner,pendingOwner,totalSupply,totalBalances,allowanceTotal,paused,,allowance
+allBurn,balanceOf,allowance,this,owner,pendingOwner,totalBalances,paused,allMint,,totalSupply
+balanceOf,allowance,this,owner,pendingOwner,totalSupply,totalBalances,paused,

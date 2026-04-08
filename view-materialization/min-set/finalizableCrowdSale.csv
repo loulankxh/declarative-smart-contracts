@@ -1,0 +1,8 @@
+end,totalIn,rate,totalMint,onceFinalize,allowance,finalized,totalOut,start,owner,totalBurn,totalSupply,,balanceOf
+end,totalIn,rate,totalMint,onceFinalize,allowance,finalized,totalOut,start,owner,allMint,totalBurn,allBurn,,totalSupply,balanceOf
+end,rate,balanceOf,allowance,onceFinalize,finalized,start,owner,allMint,allBurn,,totalSupply
+end,rate,balanceOf,onceFinalize,finalized,start,owner,totalSupply,spentTotal,allowanceTotal,,allowance
+end,spentTotal,rate,balanceOf,onceFinalize,finalized,start,owner,allMint,allBurn,allowanceTotal,,totalSupply,allowance
+end,rate,onceFinalize,balanceOf,allowance,finalized,start,owner,totalSupply,
+end,totalIn,rate,totalMint,onceFinalize,finalized,totalOut,start,owner,totalBurn,totalSupply,spentTotal,allowanceTotal,,balanceOf,allowance
+totalMint,finalized,totalOut,owner,totalBurn,end,totalIn,allBurn,rate,onceFinalize,start,allMint,spentTotal,allowanceTotal,,totalSupply,balanceOf,allowance

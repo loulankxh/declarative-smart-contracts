@@ -110,6 +110,15 @@ contract Erc20 {
         revert("Rule condition failed");
       }
   }
+  function updateAllowanceOnInsertSpentTotal_r15(address o,address s,uint l) private    {
+      SpentTotalTuple memory toDelete = spentTotal[o][s];
+      if(toDelete._valid==true) {
+        updateAllowanceOnDeleteSpentTotal_r15(o,s,toDelete.m);
+      }
+      uint m = allowanceTotal[o][s].m;
+      uint n = m-l;
+      allowance[o][s] = AllowanceTuple(n,true);
+  }
   function updateBalanceOfOnInsertTotalMint_r5(address p,uint n) private    {
       TotalMintTuple memory toDelete = totalMint[p];
       if(toDelete._valid==true) {
@@ -169,29 +178,22 @@ contract Erc20 {
       return true;
       return false;
   }
+  function updateMintOnInsertRecv_mint_r16(address p,uint n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        if(p!=address(0)) {
+          updateTotalMintOnInsertMint_r10(p,n);
+          updateAllMintOnInsertMint_r2(n);
+          emit Mint(p,n);
+          return true;
+        }
+      }
+      return false;
+  }
   function updateTotalSupplyOnInsertAllMint_r11(uint m) private    {
       uint b = allBurn.n;
       uint n = m-b;
       totalSupply = TotalSupplyTuple(n,true);
-  }
-  function updateBalanceOfOnIncrementTotalMint_r5(address p,int n) private    {
-      int _delta = int(n);
-      uint newValue = updateuintByint(totalMint[p].n,_delta);
-      updateBalanceOfOnInsertTotalMint_r5(p,newValue);
-  }
-  function updateTransferOnInsertTransferFrom_r0(address o,address r,uint n) private    {
-      updateTotalOutOnInsertTransfer_r13(o,n);
-      updateTotalInOnInsertTransfer_r8(r,n);
-      emit Transfer(o,r,n);
-  }
-  function updateAllowanceOnInsertSpentTotal_r15(address o,address s,uint l) private    {
-      SpentTotalTuple memory toDelete = spentTotal[o][s];
-      if(toDelete._valid==true) {
-        updateAllowanceOnDeleteSpentTotal_r15(o,s,toDelete.m);
-      }
-      uint m = allowanceTotal[o][s].m;
-      uint n = m-l;
-      allowance[o][s] = AllowanceTuple(n,true);
   }
   function updateSpentTotalOnInsertTransferFrom_r6(address o,address s,uint n) private    {
       int delta1 = int(n);
@@ -215,6 +217,11 @@ contract Erc20 {
       int delta1 = int(n);
       updateBalanceOfOnIncrementTotalBurn_r5(p,delta1);
       totalBurn[p].n += n;
+  }
+  function updateTransferOnInsertTransferFrom_r0(address o,address r,address _spender2,uint n) private    {
+      updateTotalOutOnInsertTransfer_r13(o,n);
+      updateTotalInOnInsertTransfer_r8(r,n);
+      emit Transfer(o,r,n);
   }
   function updateTotalSupplyOnIncrementAllBurn_r11(int b) private    {
       int _delta = int(b);
@@ -335,29 +342,6 @@ contract Erc20 {
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
   }
-  function updateMintOnInsertRecv_mint_r16(address p,uint n) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        if(p!=address(0)) {
-          updateTotalMintOnInsertMint_r10(p,n);
-          updateAllMintOnInsertMint_r2(n);
-          emit Mint(p,n);
-          return true;
-        }
-      }
-      return false;
-  }
-  function updateTransferFromOnInsertRecv_transferFrom_r18(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint k = allowance[o][s].n;
-      uint m = balanceOf[o].n;
-      if(m>=n && k>=n) {
-        updateTransferOnInsertTransferFrom_r0(o,r,n);
-        updateSpentTotalOnInsertTransferFrom_r6(o,s,n);
-        return true;
-      }
-      return false;
-  }
   function updateAllowanceOnDeleteAllowanceTotal_r15(address o,address s,uint m) private    {
       uint l = spentTotal[o][s].m;
       uint n = m-l;
@@ -369,6 +353,22 @@ contract Erc20 {
       int _delta = int(m);
       uint newValue = updateuintByint(allMint.n,_delta);
       updateTotalSupplyOnInsertAllMint_r11(newValue);
+  }
+  function updateBalanceOfOnIncrementTotalMint_r5(address p,int n) private    {
+      int _delta = int(n);
+      uint newValue = updateuintByint(totalMint[p].n,_delta);
+      updateBalanceOfOnInsertTotalMint_r5(p,newValue);
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r18(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance[o][s].n;
+      uint m = balanceOf[o].n;
+      if(m>=n && k>=n) {
+        updateSpentTotalOnInsertTransferFrom_r6(o,s,n);
+        updateTransferOnInsertTransferFrom_r0(o,r,s,n);
+        return true;
+      }
+      return false;
   }
   function updateAllBurnOnInsertBurn_r19(uint n) private    {
       int delta1 = int(n);
