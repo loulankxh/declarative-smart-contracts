@@ -1,0 +1,75 @@
+// Simplified MKR-style benchmark model.
+// This preserves the evaluation surface for the classic Maker DSToken:
+// owner auth, stop/start, setOwner, mint, auth-burn, approvals, and ERC20-style moves.
+// It omits DSAuthority-based auth and bytes32 metadata semantics.
+
+.decl *owner(p: address)
+.decl *stopped(b: bool)
+.decl allowance(owner: address, spender: address, n: uint)[0,1]
+
+.decl constructor(symbol: uint)
+
+.decl recv_setOwner(guy: address)
+.decl recv_stop()
+.decl recv_start()
+.decl recv_mint(guy: address, wad: uint)
+.decl recv_burn(guy: address, wad: uint)
+.decl recv_approve(spender: address, wad: uint)
+.decl recv_transfer(dst: address, wad: uint)
+.decl recv_transferFrom(src: address, dst: address, wad: uint)
+.decl recv_push(dst: address, wad: uint)
+.decl recv_pull(src: address, wad: uint)
+.decl recv_move(src: address, dst: address, wad: uint)
+
+.decl setOwner(guy: address)
+.decl stopAction(b: bool)
+.decl startAction(b: bool)
+.decl mint(guy: address, wad: uint)
+.decl burn(guy: address, wad: uint)
+.decl approve(owner: address, spender: address, wad: uint)
+.decl transfer(src: address, dst: address, wad: uint)
+.decl transferFrom(src: address, dst: address, spender: address, wad: uint)
+.decl pushAction(src: address, dst: address, wad: uint)
+.decl pullAction(src: address, dst: address, spender: address, wad: uint)
+.decl moveAction(src: address, dst: address, spender: address, wad: uint)
+
+.public recv_setOwner
+.public recv_stop
+.public recv_start
+.public recv_mint
+.public recv_burn
+.public recv_approve
+.public recv_transfer
+.public recv_transferFrom
+.public recv_push
+.public recv_pull
+.public recv_move
+
+owner(s) :- constructor(_), msgSender(s).
+stopped(false) :- constructor(_).
+
+setOwner(g) :- recv_setOwner(g), msgSender(s), owner(s), g != 0.
+owner(g) :- setOwner(g).
+
+stopAction(true) :- recv_stop(), msgSender(s), owner(s), stopped(false).
+stopped(b) :- stopAction(b).
+
+startAction(false) :- recv_start(), msgSender(s), owner(s), stopped(true).
+stopped(b) :- startAction(b).
+
+mint(g, n) :- recv_mint(g, n), msgSender(s), owner(s), stopped(false), g != 0.
+burn(g, n) :- recv_burn(g, n), msgSender(s), owner(s), stopped(false), g != 0.
+
+approve(o, s, n) :- recv_approve(s, n), msgSender(o), stopped(false), o != 0, s != 0.
+allowance(o, s, n) :- approve(o, s, n).
+
+transfer(s, r, n) :- recv_transfer(r, n), msgSender(s), stopped(false), s != 0, r != 0.
+
+transferFrom(o, r, s, n) :- recv_transferFrom(o, r, n), msgSender(s), stopped(false),
+                            o != 0, r != 0, allowance(o, s, k), k >= n.
+
+pushAction(s, r, n) :- recv_push(r, n), msgSender(s), stopped(false), s != 0, r != 0.
+pullAction(o, s, s, n) :- recv_pull(o, n), msgSender(s), stopped(false),
+                          o != 0, allowance(o, s, k), k >= n.
+moveAction(o, r, s, n) :- recv_move(o, r, n), msgSender(s), stopped(false),
+                          o != 0, r != 0, allowance(o, s, k), k >= n.

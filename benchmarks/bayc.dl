@@ -1,0 +1,88 @@
+// Simplified BAYC benchmark derived from sol_contracts/BAYC.sol.
+//
+// Kept surface:
+// - owner-controlled sale toggle
+// - owner-controlled reserve mint of 30 apes
+// - public paid mintApe(numberOfTokens) with the BAYC cap of 20 per call
+// - owner-controlled reveal timestamp update
+// - aggregate totalSupply / balanceOf accounting
+//
+// Intentionally omitted:
+// - inherited ERC721 token-id level ownership / approvals / transfers
+// - string metadata and provenance/baseURI
+// - withdraw
+// - startingIndexBlock / block.number / blockhash based randomness
+// - exact per-token loop mint semantics
+//
+// This benchmark keeps the contract-specific sale and supply behavior, not the
+// full OpenZeppelin ERC721 inheritance tree.
+
+.decl *owner(p: address)
+.decl *MAX_APES(n: uint)
+
+.decl *saleIsActive(b: bool)
+.decl *REVEAL_TIMESTAMP(t: uint)
+.decl totalSupply(ownerKey: address, n: uint)[0]
+.decl balanceOf(p: address, n: uint)[0]
+
+.decl constructor(maxNftSupply: uint, saleStart: uint)
+
+.decl recv_flipSaleState()
+.decl recv_reserveApes()
+.decl recv_mintApe(numberOfTokens: uint)
+.decl recv_setRevealTimestamp(revealTimeStamp: uint)
+
+.decl flipSaleStateAction(newState: bool)
+.decl reserveApesAction(to: address, minted: uint)
+.decl mintApeAction(to: address, minted: uint)
+.decl setRevealTimestampAction(revealTimeStamp: uint)
+
+.public recv_flipSaleState
+.public recv_reserveApes
+.public recv_mintApe
+.public recv_setRevealTimestamp
+.public saleIsActive(0)
+.public REVEAL_TIMESTAMP(0)
+.public totalSupply(1)
+.public balanceOf(1)
+
+owner(s) :- constructor(_, _), msgSender(s).
+MAX_APES(n) :- constructor(n, _).
+
+saleIsActive(false) :- constructor(_, _).
+flipSaleStateAction(true) :- recv_flipSaleState(), msgSender(s), owner(s), saleIsActive(false).
+flipSaleStateAction(false) :- recv_flipSaleState(), msgSender(s), owner(s), saleIsActive(true).
+saleIsActive(b) :- flipSaleStateAction(b).
+
+REVEAL_TIMESTAMP(t) :- constructor(_, saleStart), t := saleStart + 777600.
+setRevealTimestampAction(t) :- recv_setRevealTimestamp(t), msgSender(s), owner(s).
+REVEAL_TIMESTAMP(t) :- setRevealTimestampAction(t).
+
+reserveApesAction(s, 30) :- recv_reserveApes(), msgSender(s), owner(s), MAX_APES(m), totalSupply(s, ts), ts + 30 <= m.
+
+mintApeAction(s, n) :- recv_mintApe(n), msgSender(s), saleIsActive(true),
+                       owner(o), n > 0, n <= 20, MAX_APES(m), totalSupply(o, ts), ts + n <= m,
+                       msgValue(v), v >= 80000000000000000 * n.
+
+.decl initialSupply(n: uint)
+.decl totalReserve(n: uint)
+.decl totalMinted(n: uint)
+
+initialSupply(0) :- constructor(_, _).
+totalReserve(s) :- reserveApesAction(_, _), s = sum n: reserveApesAction(_, n).
+totalMinted(s) :- mintApeAction(_, _), s = sum n: mintApeAction(_, n).
+totalSupply(o, s) :- owner(o), initialSupply(i), totalReserve(r), totalMinted(m), s := (i + r) + m.
+
+.decl initialBalance(p: address, n: uint)
+.decl totalInitial(p: address, n: uint)[0]
+.decl totalReserved(p: address, n: uint)[0]
+.decl totalMintedBy(p: address, n: uint)[0]
+
+initialBalance(p, 0) :- reserveApesAction(p, _).
+initialBalance(p, 0) :- mintApeAction(p, _).
+
+totalInitial(p, s) :- initialBalance(p, _), s = sum n: initialBalance(p, n).
+totalReserved(p, s) :- reserveApesAction(p, _), s = sum n: reserveApesAction(p, n).
+totalMintedBy(p, s) :- mintApeAction(p, _), s = sum n: mintApeAction(p, n).
+
+balanceOf(p, s) :- totalInitial(p, i), totalReserved(p, r), totalMintedBy(p, m), s := (i + r) + m.

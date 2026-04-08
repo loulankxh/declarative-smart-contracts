@@ -1,0 +1,4 @@
+MAX_APES,saleIsActive,owner,REVEAL_TIMESTAMP,totalReserve,totalMinted,balanceOf,initialSupply,msgValue,,totalSupply
+totalReserved,MAX_APES,totalMintedBy,saleIsActive,REVEAL_TIMESTAMP,owner,totalReserve,totalInitial,totalMinted,initialSupply,msgValue,,totalSupply,balanceOf
+totalReserved,MAX_APES,totalMintedBy,totalSupply,saleIsActive,REVEAL_TIMESTAMP,owner,totalInitial,msgValue,,balanceOf
+MAX_APES,totalSupply,saleIsActive,owner,REVEAL_TIMESTAMP,balanceOf,msgValue,

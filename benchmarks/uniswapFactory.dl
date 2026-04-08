@@ -1,0 +1,37 @@
+// Simplified Uniswap V2 Factory benchmark.
+// This preserves the factory admin surface and pair-creation entrypoint.
+// It omits exact CREATE2 address derivation, pair-address storage, and duplicate-pair rejection.
+
+.decl *feeToSetter(p: address)
+.decl *feeTo(p: address)
+.decl *allPairsLength(n: uint)
+
+.decl constructor(feeSetter: address)
+
+.decl recv_createPair(tokenA: address, tokenB: address)
+.decl recv_setFeeTo(feeTo: address)
+.decl recv_setFeeToSetter(feeToSetter: address)
+
+.decl createPair(tokenA: address, tokenB: address)
+.decl setFeeTo(p: address)
+.decl setFeeToSetter(p: address)
+
+.public recv_createPair
+.public recv_setFeeTo
+.public recv_setFeeToSetter
+.public feeToSetter(0)
+.public feeTo(0)
+.public allPairsLength(0)
+
+feeToSetter(p) :- constructor(p).
+feeTo(0) :- constructor(_).
+allPairsLength(0) :- constructor(_).
+
+setFeeTo(p) :- recv_setFeeTo(p), msgSender(s), feeToSetter(s).
+feeTo(p) :- setFeeTo(p).
+
+setFeeToSetter(p) :- recv_setFeeToSetter(p), msgSender(s), feeToSetter(s), p != 0.
+feeToSetter(p) :- setFeeToSetter(p).
+
+createPair(a, b) :- recv_createPair(a, b), a != b, a != 0, b != 0.
+allPairsLength(n) :- n = count: createPair(_, _).

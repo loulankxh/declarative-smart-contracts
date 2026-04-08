@@ -40,7 +40,18 @@ object Main extends App {
     "paymentSplitter.dl",
     "stbt.dl",
     "theta.dl",
-    "voting.dl"
+    "voting.dl",
+    "dai.dl",
+    "mkr.dl",
+    "uni.dl",
+    "pepe.dl",
+    "erc721.dl",
+    "erc1155.dl",
+    "bayc.dl",
+    "ppg.dl",
+    "uniswapFactory.dl",
+    "uniswapPair.dl",
+    "cryptoPunks.dl"
     )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {

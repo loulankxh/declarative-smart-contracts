@@ -1,0 +1,9 @@
+#body,head,ruleId,isAgg,isTx
+msgSender,setFeeTo,1,false,true
+feeToSetter,setFeeTo,1,false,true
+createPair,allPairsLength,2,true,false
+ ,createPair,3,false,true
+setFeeTo,feeTo,4,false,false
+msgSender,setFeeToSetter,5,false,true
+feeToSetter,setFeeToSetter,5,false,true
+setFeeToSetter,feeToSetter,8,false,false

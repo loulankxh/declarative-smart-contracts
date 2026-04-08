@@ -19,7 +19,7 @@ case class TypeChecker() {
 
   private def inferFunctorType(f: Functor, paramTypes: Map[String, Type]): Option[Type] = {
     val argTypes = f.args.flatMap(a => inferType(a,paramTypes)).toSet
-    assert(argTypes.size <= 1)
+    require(argTypes.size <= 1, s"Inconsistent functor types for $f: $argTypes")
     argTypes.headOption
   }
 

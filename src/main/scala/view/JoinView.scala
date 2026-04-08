@@ -216,8 +216,7 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
         }
         case _ => ()
       }
-      /** need a better way to identify functions declared manually and act as boolean functions */
-      if (allIndices(func.relation).isEmpty && func.relation.name!="totalReceived") boolFunctionLiterals += func // no primary key
+      if (allIndices(func.relation).isEmpty && func.relation.name!="totalReceived") boolFunctionLiterals += func
     }
     boolFunctionLiterals
   }
