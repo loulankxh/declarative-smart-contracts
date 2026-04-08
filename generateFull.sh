@@ -10,4 +10,3 @@ for file in "$dlDir"/*.dl; do
 	mkdir -p "$outDir/$basename"
 	sbt "run compile --materialize $planDir/$basename.csv --out $outDir/ $dlDir/$filename"
 done
-
