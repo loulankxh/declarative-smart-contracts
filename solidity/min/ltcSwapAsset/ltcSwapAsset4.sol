@@ -118,21 +118,22 @@ contract LtcSwapAsset {
       uint n = allowance(p,s);
       return n;
   }
+  function updateTransferFromOnInsertRecv_transferFrom_r23(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance(o,s);
+      uint m = balanceOf(o);
+      if(m>=n && k>=n) {
+        updateSpentTotalOnInsertTransferFrom_r10(o,s,n);
+        updateTransferOnInsertTransferFrom_r0(o,r,s,n);
+        return true;
+      }
+      return false;
+  }
   function totalSupply() private view  returns (uint) {
       uint b = allBurn.n;
       uint m = allMint.n;
       uint n = m-b;
       return n;
-  }
-  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(p!=address(0) && owner(s)) {
-        updateAllMintOnInsertMint_r3(n);
-        updateTotalMintOnInsertMint_r15(p,n);
-        emit Mint(p,n);
-        return true;
-      }
-      return false;
   }
   function updateAllMintOnInsertMint_r3(uint n) private    {
       int delta0 = int(n);
@@ -154,6 +155,12 @@ contract LtcSwapAsset {
         // Empty()
       }
   }
+  function updateEffectiveTimeOnInsertConstructor_r1() private    {
+      uint t = block.timestamp;
+      updateOwnerOnInsertEffectiveTime_r4(t);
+      updateOwnerOnInsertEffectiveTime_r8(t);
+      effectiveTime = EffectiveTimeTuple(t,true);
+  }
   function updateIncreaseAllowanceOnInsertRecv_approve_r26(address s,uint n) private   returns (bool) {
       address o = msg.sender;
       uint m = allowance(o,s);
@@ -173,34 +180,26 @@ contract LtcSwapAsset {
       updateTotalSupplyOnIncrementAllBurn_r16(delta0);
       allBurn.n += n;
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r23(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint k = allowance(o,s);
-      uint m = balanceOf(o);
-      if(m>=n && k>=n) {
-        updateSpentTotalOnInsertTransferFrom_r10(o,s,n);
-        updateTransferOnInsertTransferFrom_r0(o,r,s,n);
-        return true;
-      }
-      return false;
-  }
-  function updateBurnOnInsertRecv_burn_r6(address p,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf(p);
-      if(p!=address(0) && n<=m && owner(s)) {
-        updateTotalBurnOnInsertBurn_r14(p,n);
-        updateAllBurnOnInsertBurn_r24(n);
-        emit Burn(p,n);
-        return true;
-      }
-      return false;
-  }
   function updateTotalBalancesOnInsertConstructor_r28() private    {
       totalBalances = TotalBalancesTuple(0,true);
   }
   function updateNewOwnerOnInsertSwapOwner_r25(address _p0,address q,uint _t2) private    {
       updateOwnerOnInsertNewOwner_r4(q);
       newOwner = NewOwnerTuple(q,true);
+  }
+  function owner() private view  returns (address) {
+      address p = newOwner.p;
+      uint t2 = effectiveTime.t;
+      uint t = block.timestamp;
+      if(t>=t2) {
+        return p;
+      }
+      address p = oldOwner.p;
+      uint t2 = effectiveTime.t;
+      uint t = block.timestamp;
+      if(t<t2) {
+        return p;
+      }
   }
   function updateOldOwnerOnInsertSwapOwner_r12(address p,address _q1,uint _t2) private    {
       updateOwnerOnInsertOldOwner_r8(p);
@@ -265,11 +264,36 @@ contract LtcSwapAsset {
   function updateTotalSupplyOnIncrementAllMint_r16(int m) private    {
       // Empty()
   }
-  function updateBalanceOfOnIncrementTotalOut_r7(address p,int o) private    {
-      // Empty()
+  function updateBurnOnInsertRecv_burn_r6(address p,uint n) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        uint m = balanceOf(p);
+        if(p!=address(0) && n<=m) {
+          updateTotalBurnOnInsertBurn_r14(p,n);
+          updateAllBurnOnInsertBurn_r24(n);
+          emit Burn(p,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updateAllowanceOnIncrementAllowanceTotal_r20(address o,address s,int m) private    {
       // Empty()
+  }
+  function updateBalanceOfOnIncrementTotalOut_r7(address p,int o) private    {
+      // Empty()
+  }
+  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        if(p!=address(0)) {
+          updateAllMintOnInsertMint_r3(n);
+          updateTotalMintOnInsertMint_r15(p,n);
+          emit Mint(p,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updateTotalInOnInsertTransfer_r11(address p,uint n) private    {
       int delta0 = int(n);
@@ -279,6 +303,19 @@ contract LtcSwapAsset {
   function updateBalanceOfOnIncrementTotalMint_r7(address p,int n) private    {
       // Empty()
   }
+  function updateSwapOwnerOnInsertRecv_swapOwner_r22(address p,address q,uint d) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        uint t0 = block.timestamp;
+        uint t = t0+d;
+        updateNewOwnerOnInsertSwapOwner_r25(p,q,t);
+        updateEffectiveTimeOnInsertSwapOwner_r2(p,q,t);
+        updateOldOwnerOnInsertSwapOwner_r12(p,q,t);
+        emit SwapOwner(p,q,t);
+        return true;
+      }
+      return false;
+  }
   function updateTotalMintOnInsertMint_r15(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalMint_r7(p,delta0);
@@ -286,23 +323,6 @@ contract LtcSwapAsset {
   }
   function updateTotalSupplyOnInsertConstructor_r13() private    {
       // Empty()
-  }
-  function owner(address p) private view  returns (bool) {
-      if(p==newOwner.p) {
-        uint t2 = effectiveTime.t;
-        uint t = block.timestamp;
-        if(t>=t2) {
-          return true;
-        }
-      }
-      if(p==oldOwner.p) {
-        uint t2 = effectiveTime.t;
-        uint t = block.timestamp;
-        if(t<t2) {
-          return true;
-        }
-      }
-      return false;
   }
   function updateTotalOutOnInsertTransfer_r18(address p,uint n) private    {
       int delta0 = int(n);
@@ -333,24 +353,5 @@ contract LtcSwapAsset {
   }
   function updateAllowanceOnIncrementSpentTotal_r20(address o,address s,int l) private    {
       // Empty()
-  }
-  function updateEffectiveTimeOnInsertConstructor_r1() private    {
-      uint t = block.timestamp;
-      updateOwnerOnInsertEffectiveTime_r4(t);
-      updateOwnerOnInsertEffectiveTime_r8(t);
-      effectiveTime = EffectiveTimeTuple(t,true);
-  }
-  function updateSwapOwnerOnInsertRecv_swapOwner_r22(address p,address q,uint d) private   returns (bool) {
-      address s = msg.sender;
-      uint t0 = block.timestamp;
-      if(owner(s)) {
-        uint t = t0+d;
-        updateNewOwnerOnInsertSwapOwner_r25(p,q,t);
-        updateEffectiveTimeOnInsertSwapOwner_r2(p,q,t);
-        updateOldOwnerOnInsertSwapOwner_r12(p,q,t);
-        emit SwapOwner(p,q,t);
-        return true;
-      }
-      return false;
   }
 }

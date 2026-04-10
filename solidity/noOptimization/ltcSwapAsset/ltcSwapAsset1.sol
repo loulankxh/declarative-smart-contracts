@@ -128,6 +128,11 @@ contract LtcSwapAsset {
       uint n = balanceOf[p].n;
       return n;
   }
+  function updateTotalSupplyOnInsertAllMint_r16(uint m) private    {
+      uint b = allBurn.n;
+      uint n = m-b;
+      totalSupply = TotalSupplyTuple(n,true);
+  }
   function updateAllowanceOnInsertSpentTotal_r20(address o,address s,uint l) private    {
       SpentTotalTuple memory toDelete = spentTotal[o][s];
       if(toDelete._valid==true) {
@@ -145,16 +150,6 @@ contract LtcSwapAsset {
       if(s==balanceOf[p].n) {
         balanceOf[p] = BalanceOfTuple(0,false);
       }
-  }
-  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
-      address s = msg.sender;
-      if(p!=address(0) && owner(s)) {
-        updateAllMintOnInsertMint_r3(n);
-        updateTotalMintOnInsertMint_r15(p,n);
-        emit Mint(p,n);
-        return true;
-      }
-      return false;
   }
   function updateOwnerOnInsertNewOwner_r4(address p) private    {
       uint t2 = effectiveTime.t;
@@ -174,8 +169,17 @@ contract LtcSwapAsset {
       uint convertedValue = uint(value);
       return convertedValue;
   }
-  function updateTotalBalancesOnInsertConstructor_r28() private    {
-      // Empty()
+  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        if(p!=address(0)) {
+          updateAllMintOnInsertMint_r3(n);
+          updateTotalMintOnInsertMint_r15(p,n);
+          emit Mint(p,n);
+          return true;
+        }
+      }
+      return false;
   }
   function updateOwnerOnInsertEffectiveTime_r8(uint t2) private    {
       address p = oldOwner.p;
@@ -204,22 +208,6 @@ contract LtcSwapAsset {
       int _delta = int(b);
       uint newValue = updateuintByint(allBurn.n,_delta);
       updateTotalSupplyOnInsertAllBurn_r16(newValue);
-  }
-  function updateBurnOnInsertRecv_burn_r6(address p,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf[p].n;
-      if(p!=address(0) && n<=m && owner(s)) {
-        updateTotalBurnOnInsertBurn_r14(p,n);
-        updateAllBurnOnInsertBurn_r24(n);
-        emit Burn(p,n);
-        return true;
-      }
-      return false;
-  }
-  function updateTotalSupplyOnInsertAllMint_r16(uint m) private    {
-      uint b = allBurn.n;
-      uint n = m-b;
-      totalSupply = TotalSupplyTuple(n,true);
   }
   function updateBalanceOfOnDeleteTotalBurn_r7(address p,uint m) private    {
       uint i = totalIn[p].n;
@@ -258,6 +246,20 @@ contract LtcSwapAsset {
       int _delta = int(l);
       uint newValue = updateuintByint(spentTotal[o][s].m,_delta);
       updateAllowanceOnInsertSpentTotal_r20(o,s,newValue);
+  }
+  function owner() private view  returns (address) {
+      address p = newOwner.p;
+      uint t2 = effectiveTime.t;
+      uint t = block.timestamp;
+      if(t>=t2) {
+        return p;
+      }
+      address p = oldOwner.p;
+      uint t2 = effectiveTime.t;
+      uint t = block.timestamp;
+      if(t<t2) {
+        return p;
+      }
   }
   function updateAllowanceOnIncrementAllowanceTotal_r20(address o,address s,int m) private    {
       int _delta = int(m);
@@ -309,6 +311,19 @@ contract LtcSwapAsset {
       updateBalanceOfOnIncrementTotalOut_r7(p,delta2);
       totalOut[p].n += n;
   }
+  function updateBurnOnInsertRecv_burn_r6(address p,uint n) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        uint m = balanceOf[p].n;
+        if(p!=address(0) && n<=m) {
+          updateTotalBurnOnInsertBurn_r14(p,n);
+          updateAllBurnOnInsertBurn_r24(n);
+          emit Burn(p,n);
+          return true;
+        }
+      }
+      return false;
+  }
   function updateTotalBurnOnInsertBurn_r14(address p,uint n) private    {
       int delta1 = int(n);
       updateBalanceOfOnIncrementTotalBurn_r7(p,delta1);
@@ -355,6 +370,22 @@ contract LtcSwapAsset {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalIn_r7(p,delta0);
       totalIn[p].n += n;
+  }
+  function updateTotalBalancesOnInsertConstructor_r28() private    {
+      // Empty()
+  }
+  function updateSwapOwnerOnInsertRecv_swapOwner_r22(address p,address q,uint d) private   returns (bool) {
+      address s = owner();
+      if(s==msg.sender) {
+        uint t0 = block.timestamp;
+        uint t = t0+d;
+        updateNewOwnerOnInsertSwapOwner_r25(p,q,t);
+        updateEffectiveTimeOnInsertSwapOwner_r2(p,q,t);
+        updateOldOwnerOnInsertSwapOwner_r12(p,q,t);
+        emit SwapOwner(p,q,t);
+        return true;
+      }
+      return false;
   }
   function updateAllowanceOnDeleteSpentTotal_r20(address o,address s,uint l) private    {
       uint m = allowanceTotal[o][s].m;
@@ -412,23 +443,6 @@ contract LtcSwapAsset {
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
   }
-  function owner(address p) private view  returns (bool) {
-      if(p==newOwner.p) {
-        uint t2 = effectiveTime.t;
-        uint t = block.timestamp;
-        if(t>=t2) {
-          return true;
-        }
-      }
-      if(p==oldOwner.p) {
-        uint t2 = effectiveTime.t;
-        uint t = block.timestamp;
-        if(t<t2) {
-          return true;
-        }
-      }
-      return false;
-  }
   function updateOwnerOnInsertEffectiveTime_r4(uint t2) private    {
       address p = newOwner.p;
       uint t = block.timestamp;
@@ -451,19 +465,6 @@ contract LtcSwapAsset {
       int _delta = int(m);
       uint newValue = updateuintByint(totalBurn[p].n,_delta);
       updateBalanceOfOnInsertTotalBurn_r7(p,newValue);
-  }
-  function updateSwapOwnerOnInsertRecv_swapOwner_r22(address p,address q,uint d) private   returns (bool) {
-      address s = msg.sender;
-      uint t0 = block.timestamp;
-      if(owner(s)) {
-        uint t = t0+d;
-        updateNewOwnerOnInsertSwapOwner_r25(p,q,t);
-        updateEffectiveTimeOnInsertSwapOwner_r2(p,q,t);
-        updateOldOwnerOnInsertSwapOwner_r12(p,q,t);
-        emit SwapOwner(p,q,t);
-        return true;
-      }
-      return false;
   }
   function updateTotalMintOnInsertMint_r15(address p,uint n) private    {
       int delta1 = int(n);

@@ -103,8 +103,12 @@ case class SolidityTranslator(program: ImperativeAbstractProgram, dl: Program,
     }.toMap
     val primaryKeyLiterals = primaryKeyIndices(query.relation).map(i => query.literal.fields(i))
     if(primaryKeyIndices(query.relation).isEmpty) {
-      /** need a better way to identify functions declared manually and act as boolean functions*/
-      if (dl.interfaces.map(i=>i.relation).contains(query.relation) || query.relation.name=="totalReceived") {
+      /** Distinguish boolean functions from value-returning functions.
+        * Boolean functions: all fields are boolean-typed (e.g., *paused(b: bool))
+        * Value functions: have non-boolean fields (e.g., *companyTokens(n: uint)) */
+      val allFieldsBoolean = query.relation.sig.forall(_.isInstanceOf[BooleanType])
+      if (dl.interfaces.map(i=>i.relation).contains(query.relation) || query.relation.name=="totalReceived"
+          || !allFieldsBoolean) {
         assert(query.relation.paramList.size==1)
         DeclFunction(query.relation.name, List(), query.relation.paramList.head._type, query.statement,
           FunctionMetaData(Publicity.Private, isView = true, isTransaction = false,
@@ -242,7 +246,7 @@ case class SolidityTranslator(program: ImperativeAbstractProgram, dl: Program,
   private def getCallDependentFunctionsStatement(update: UpdateStatement): Statement = {
     val dsHelper = dataStructureHelper(update.relation)
     dependentFunctions.get(update.relation) match {
-      case Some(dependents) => dsHelper.callDependentFunctions(update, dependents)
+      case Some(dependents) => dsHelper.callDependentFunctions(update, dependents, dl.functions)
       case None => Empty()
     }
   }

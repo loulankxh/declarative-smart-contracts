@@ -1,2 +1,2 @@
-bidTotal,end,withdrawTotal,withdrawCount,beneficiary,endTime,owner,highestBid,msgValue,,balance
-end,withdrawCount,beneficiary,endTime,owner,highestBid,balance,msgValue,
+highestBid,beneficiary,owner,endTime,msgValue,end,balance,withdrawCount,
+highestBid,beneficiary,owner,endTime,msgValue,bidTotal,end,withdrawTotal,withdrawCount,,balance

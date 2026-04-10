@@ -152,8 +152,9 @@ abstract class AbstractImperativeTranslator(program: Program, materializedRelati
     )
     var statement = ruleStatements
     /** need a better way to identify functions declared manually and act as boolean functions */
+    val allFieldsBoolean = relation.sig.forall(_.isInstanceOf[datalog.BooleanType])
     if (primaryKeyIndices(relation).isEmpty && !program.interfaces.map(i=>i.relation).contains(relation)
-      && relation.name!="totalReceived") {
+      && relation.name!="totalReceived" && allFieldsBoolean) {
       statement = Statement.makeSeq(ruleStatements,Return(Constant.CFalse))
     }
 

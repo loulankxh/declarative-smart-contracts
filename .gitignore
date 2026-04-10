@@ -7,3 +7,6 @@ view-materialization/experiment
 view-materialization/target
 truffle-config.js
 **/.DS_Store
+BenchmarkNew/
+
+solidity/

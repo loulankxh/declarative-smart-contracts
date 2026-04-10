@@ -1,8 +1,0 @@
-unlockTime,spentTotal,balanceOf,owner,totalSupply,totalBalances,allowanceTotal,,canTransfer,allowance
-totalIn,unlockTime,totalBalances,totalMint,totalOut,owner,totalBurn,totalSupply,spentTotal,allowanceTotal,,canTransfer,balanceOf,allowance
-unlockTime,balanceOf,allowance,owner,totalSupply,totalBalances,,canTransfer
-totalIn,unlockTime,totalMint,allowance,totalOut,owner,totalBurn,totalSupply,totalBalances,,canTransfer,balanceOf
-totalIn,unlockTime,totalBalances,totalMint,allowance,totalOut,owner,allMint,totalBurn,allBurn,,canTransfer,totalSupply,balanceOf
-unlockTime,allBurn,spentTotal,balanceOf,owner,allMint,totalBalances,allowanceTotal,,canTransfer,totalSupply,allowance
-totalIn,unlockTime,totalBalances,spentTotal,totalMint,totalOut,owner,allMint,totalBurn,allBurn,allowanceTotal,,canTransfer,totalSupply,balanceOf,allowance
-unlockTime,allBurn,balanceOf,allowance,owner,allMint,totalBalances,,canTransfer,totalSupply

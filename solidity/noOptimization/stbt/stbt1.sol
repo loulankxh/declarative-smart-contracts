@@ -66,7 +66,6 @@ contract Stbt {
     bool _valid;
   }
   mapping(address=>TotalInTuple) totalIn;
-  OwnerTuple owner;
   mapping(address=>TotalMintTuple) totalMint;
   TotalSupplyTuple totalSupply;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
@@ -77,6 +76,7 @@ contract Stbt {
   mapping(address=>TotalOutTuple) totalOut;
   MinIntervalTuple minInterval;
   mapping(address=>TotalBurnTuple) totalBurn;
+  OwnerTuple owner;
   AllMintTuple allMint;
   DistributeTotalTuple distributeTotal;
   mapping(address=>BalanceOfTuple) balanceOf;

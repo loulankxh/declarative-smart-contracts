@@ -43,6 +43,10 @@ contract Theta {
     uint n;
     bool _valid;
   }
+  struct PrecirculatedTuple {
+    bool b;
+    bool _valid;
+  }
   struct BalanceOfTuple {
     uint n;
     bool _valid;
@@ -55,13 +59,14 @@ contract Theta {
   mapping(address=>TotalOutTuple) totalOut;
   UnlockTimeTuple unlockTime;
   mapping(address=>TotalBurnTuple) totalBurn;
-  OwnerTuple owner;
   mapping(address=>TotalMintTuple) totalMint;
+  mapping(address=>PrecirculatedTuple) precirculated;
   TotalSupplyTuple totalSupply;
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
+  OwnerTuple owner;
   mapping(address=>BalanceOfTuple) balanceOf;
   AllBurnTuple allBurn;
   event Burn(address p,uint amount);
@@ -138,11 +143,6 @@ contract Theta {
       uint convertedValue = uint(value);
       return convertedValue;
   }
-  function updateTransferOnInsertTransferFrom_r0(address o,address r,address _spender2,uint n) private    {
-      updateTotalOutOnInsertTransfer_r17(o,n);
-      updateTotalInOnInsertTransfer_r12(r,n);
-      emit Transfer(o,r,n);
-  }
   function updateAllowanceTotalOnInsertIncreaseAllowance_r13(address o,address s,uint n) private    {
       int delta1 = int(n);
       updateAllowanceOnIncrementAllowanceTotal_r21(o,s,delta1);
@@ -176,14 +176,6 @@ contract Theta {
       int _delta = int(i);
       uint newValue = updateuintByint(totalIn[p].n,_delta);
       updateBalanceOfOnInsertTotalIn_r9(p,newValue);
-  }
-  function updatePrecirculatedOnInsertRecv_disallowPrecirculation_r26(address p) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        emit Precirculated(p,false);
-        return true;
-      }
-      return false;
   }
   function updateBalanceOfOnDeleteTotalIn_r9(address p,uint i) private    {
       uint o = totalOut[p].n;
@@ -311,10 +303,25 @@ contract Theta {
   function updatePrecirculatedOnInsertRecv_allowPrecirculation_r19(address p) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
+        precirculated[p] = PrecirculatedTuple(true,true);
         emit Precirculated(p,true);
         return true;
       }
       return false;
+  }
+  function updatePrecirculatedOnInsertRecv_disallowPrecirculation_r26(address p) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        precirculated[p] = PrecirculatedTuple(false,true);
+        emit Precirculated(p,false);
+        return true;
+      }
+      return false;
+  }
+  function updateTransferOnInsertTransferFrom_r0(address o,address r,address _spender2,uint n) private    {
+      updateTotalOutOnInsertTransfer_r17(o,n);
+      updateTotalInOnInsertTransfer_r12(r,n);
+      emit Transfer(o,r,n);
   }
   function updateBalanceOfOnInsertTotalIn_r9(address p,uint i) private    {
       TotalInTuple memory toDelete = totalIn[p];

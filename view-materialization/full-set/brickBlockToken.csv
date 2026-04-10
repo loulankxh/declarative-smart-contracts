@@ -1,1 +1,1 @@
-owner,onceUpgrade,totalOut,decreaseTotal,bonusShare,allowanceTotal,successorAddress,totalIn,balances,initialSupply,tokenSaleActive,allowed,paused,dead,onceUnpaused,BrickblockToken,this,spentTotal,onceEndSale,
+burn,tokenSaleActive,owner,fountainContractAddress,spentTotal,totalBurn,dead,initialSupply,totalSupply,decreaseTotal,totalOut,onceEndSale,allowed,totalIn,burnTotal,onceUnpaused,paused,bonusDistributionAddress,companyTokens,allowanceTotal,balances,

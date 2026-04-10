@@ -1,8 +1,0 @@
-totalMint,distributeTotal,totalOut,owner,totalBurn,spentTotal,allMint,totalIn,allBurn,permission,minInterval,lastDistributeTime,totalBalances,allowanceTotal,,canSend,canRecv,totalSupply,balanceOf,allowance
-totalIn,permission,totalMint,allowance,totalOut,minInterval,owner,lastDistributeTime,totalBurn,totalSupply,totalBalances,,canRecv,balanceOf,canSend
-permission,balanceOf,allowance,minInterval,owner,lastDistributeTime,totalSupply,totalBalances,,canRecv,canSend
-totalIn,totalBalances,permission,totalMint,totalOut,minInterval,owner,lastDistributeTime,totalBurn,totalSupply,spentTotal,allowanceTotal,,canSend,canRecv,balanceOf,allowance
-lastDistributeTime,totalBalances,permission,distributeTotal,allowance,balanceOf,minInterval,owner,allMint,allBurn,,totalSupply,canRecv,canSend
-spentTotal,permission,balanceOf,minInterval,owner,lastDistributeTime,totalSupply,totalBalances,allowanceTotal,,canSend,canRecv,allowance
-lastDistributeTime,totalBalances,spentTotal,permission,distributeTotal,balanceOf,minInterval,owner,allMint,allBurn,allowanceTotal,,canSend,totalSupply,canRecv,allowance
-totalIn,totalBalances,permission,totalMint,distributeTotal,allowance,totalOut,minInterval,owner,lastDistributeTime,totalBurn,allBurn,allMint,,totalSupply,canRecv,balanceOf,canSend

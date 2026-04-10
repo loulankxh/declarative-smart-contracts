@@ -1,8 +1,4 @@
 contract CappedCrowdSale {
-  struct TotalInTuple {
-    uint n;
-    bool _valid;
-  }
   struct RaisedTuple {
     uint n;
     bool _valid;
@@ -11,15 +7,7 @@ contract CappedCrowdSale {
     uint time;
     bool _valid;
   }
-  struct AllowanceTotalTuple {
-    uint m;
-    bool _valid;
-  }
-  struct TotalOutTuple {
-    uint n;
-    bool _valid;
-  }
-  struct TotalBurnTuple {
+  struct AllowanceTuple {
     uint n;
     bool _valid;
   }
@@ -29,14 +17,6 @@ contract CappedCrowdSale {
   }
   struct OwnerTuple {
     address p;
-    bool _valid;
-  }
-  struct OnceFinalizeTuple {
-    bool b;
-    bool _valid;
-  }
-  struct TotalMintTuple {
-    uint n;
     bool _valid;
   }
   struct CapTuple {
@@ -55,21 +35,16 @@ contract CappedCrowdSale {
     uint n;
     bool _valid;
   }
-  struct SpentTotalTuple {
-    uint m;
+  struct BalanceOfTuple {
+    uint n;
     bool _valid;
   }
-  mapping(address=>TotalInTuple) totalIn;
-  mapping(address=>TotalOutTuple) totalOut;
-  mapping(address=>TotalBurnTuple) totalBurn;
   RaisedTuple raised;
   EndTuple end;
-  mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
-  mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
+  mapping(address=>BalanceOfTuple) balanceOf;
+  mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   FinalizedTuple finalized;
   OwnerTuple owner;
-  OnceFinalizeTuple onceFinalize;
-  mapping(address=>TotalMintTuple) totalMint;
   CapTuple cap;
   RateTuple rate;
   StartTuple start;
@@ -113,19 +88,19 @@ contract CappedCrowdSale {
         revert("Rule condition failed");
       }
   }
+  function getAllowance(address p,address s) public view  returns (uint) {
+      uint n = allowance[p][s].n;
+      return n;
+  }
+  function getBalanceOf(address p) public view  returns (uint) {
+      uint n = balanceOf[p].n;
+      return n;
+  }
   function approve(address s,uint n) public    {
       bool r22 = updateIncreaseAllowanceOnInsertRecv_approve_r22(s,n);
       if(r22==false) {
         revert("Rule condition failed");
       }
-  }
-  function getBalanceOf(address p) public view  returns (uint) {
-      uint n = balanceOf(p);
-      return n;
-  }
-  function getAllowance(address p,address s) public view  returns (uint) {
-      uint n = allowance(p,s);
-      return n;
   }
   function finalize() public    {
       bool r15 = updateFinalizeOnInsertRecv_finalize_r15();
@@ -139,6 +114,14 @@ contract CappedCrowdSale {
       if(r23==false) {
         revert("Rule condition failed");
       }
+  }
+  function updateOnceFinalizeOnInsertConstructor_r14() private    {
+      // Empty()
+  }
+  function updateBalanceOfOnIncrementTotalBurn_r3(address p,int m) private    {
+      int _delta = int(-m);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
   }
   function updateFinalizeOnInsertRecv_finalize_r15() private   returns (bool) {
       uint c = cap.n;
@@ -156,50 +139,56 @@ contract CappedCrowdSale {
       }
       return false;
   }
-  function updateTransferFromOnInsertRecv_transferFrom_r23(address o,address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint k = allowance(o,s);
-      uint m = balanceOf(o);
-      if(m>=n && k>=n) {
-        updateSpentTotalOnInsertTransferFrom_r4(o,s,n);
-        updateTransferOnInsertTransferFrom_r0(o,r,s,n);
-        return true;
-      }
-      return false;
+  function updateTotalInOnInsertTransfer_r26(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalIn_r3(p,delta0);
   }
-  function updateBalanceOfOnIncrementTotalBurn_r3(address p,int m) private    {
-      // Empty()
-  }
-  function updateAllowanceOnIncrementAllowanceTotal_r20(address o,address s,int m) private    {
-      // Empty()
-  }
-  function updateRaisedOnInsertBuyToken_r2(uint n) private    {
-      raised.n += n;
+  function updateTotalSupplyOnIncrementAllBurn_r11(int b) private    {
+      int _delta = int(-b);
+      uint newValue = updateuintByint(totalSupply.n,_delta);
+      totalSupply.n = newValue;
   }
   function updateTotalOutOnInsertTransfer_r19(address p,uint n) private    {
       int delta0 = int(n);
       updateBalanceOfOnIncrementTotalOut_r3(p,delta0);
-      totalOut[p].n += n;
   }
-  function updateAllowanceTotalOnInsertIncreaseAllowance_r6(address o,address s,uint n) private    {
-      int delta0 = int(n);
-      updateAllowanceOnIncrementAllowanceTotal_r20(o,s,delta0);
-      allowanceTotal[o][s].m += n;
+  function updateTransferOnInsertRecv_transfer_r18(address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint m = balanceOf[s].n;
+      if(n<=m) {
+        updateTotalInOnInsertTransfer_r26(r,n);
+        updateTotalOutOnInsertTransfer_r19(s,n);
+        emit Transfer(s,r,n);
+        return true;
+      }
+      return false;
+  }
+  function updateBalanceOfOnIncrementTotalMint_r3(address p,int n) private    {
+      int _delta = int(n);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
+  }
+  function updateRaisedOnInsertBuyToken_r2(uint n) private    {
+      raised.n += n;
   }
   function updateAllBurnOnInsertBurn_r24(uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllBurn_r11(delta0);
   }
-  function updateTotalSupplyOnInsertConstructor_r1() private    {
-      totalSupply = TotalSupplyTuple(0,true);
+  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
+      address s = owner.p;
+      if(s==msg.sender) {
+        if(p!=address(0)) {
+          updateTotalMintOnInsertMint_r10(p,n);
+          updateAllMintOnInsertMint_r7(n);
+          emit Mint(p,n);
+          return true;
+        }
+      }
+      return false;
   }
-  function updateAllowanceOnIncrementSpentTotal_r20(address o,address s,int l) private    {
+  function updateOnceFinalizeOnInsertFinalize_r13() private    {
       // Empty()
-  }
-  function updateTotalBurnOnInsertBurn_r9(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalBurn_r3(p,delta0);
-      totalBurn[p].n += n;
   }
   function updateBuyTokenOnInsertRecv_buyToken_r8(address p,uint m) private   returns (bool) {
       uint e = end.time;
@@ -216,29 +205,14 @@ contract CappedCrowdSale {
       }
       return false;
   }
-  function updateBalanceOfOnIncrementTotalMint_r3(address p,int n) private    {
-      // Empty()
-  }
-  function updateTotalSupplyOnIncrementAllBurn_r11(int b) private    {
-      int _delta = int(-b);
-      uint newValue = updateuintByint(totalSupply.n,_delta);
-      totalSupply.n = newValue;
-  }
-  function updateTotalMintOnInsertMint_r10(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalMint_r3(p,delta0);
-      totalMint[p].n += n;
-  }
-  function updateOnceFinalizeOnInsertConstructor_r14() private    {
-      onceFinalize = OnceFinalizeTuple(false,true);
-  }
   function updateBalanceOfOnIncrementTotalIn_r3(address p,int i) private    {
-      // Empty()
+      int _delta = int(i);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
   }
   function updateSpentTotalOnInsertTransferFrom_r4(address o,address s,uint n) private    {
       int delta0 = int(n);
       updateAllowanceOnIncrementSpentTotal_r20(o,s,delta0);
-      spentTotal[o][s].m += n;
   }
   function updateMintOnInsertBuyToken_r16(address p,uint n) private    {
       updateTotalMintOnInsertMint_r10(p,n);
@@ -248,28 +222,14 @@ contract CappedCrowdSale {
   function updateFinalizedOnInsertFinalize_r17() private    {
       finalized = FinalizedTuple(true,true);
   }
-  function balanceOf(address p) private view  returns (uint) {
-      uint i = totalIn[p].n;
-      uint o = totalOut[p].n;
-      uint m = totalBurn[p].n;
-      uint n = totalMint[p].n;
-      uint s = ((n+i)-m)-o;
-      return s;
-  }
   function updateAllMintOnInsertMint_r7(uint n) private    {
       int delta0 = int(n);
       updateTotalSupplyOnIncrementAllMint_r11(delta0);
   }
-  function updateTransferOnInsertRecv_transfer_r18(address r,uint n) private   returns (bool) {
-      address s = msg.sender;
-      uint m = balanceOf(s);
-      if(n<=m) {
-        updateTotalInOnInsertTransfer_r26(r,n);
-        updateTotalOutOnInsertTransfer_r19(s,n);
-        emit Transfer(s,r,n);
-        return true;
-      }
-      return false;
+  function updateBalanceOfOnIncrementTotalOut_r3(address p,int o) private    {
+      int _delta = int(-o);
+      uint newValue = updateuintByint(balanceOf[p].n,_delta);
+      balanceOf[p].n = newValue;
   }
   function updateTotalSupplyOnIncrementAllMint_r11(int m) private    {
       int _delta = int(m);
@@ -280,19 +240,10 @@ contract CappedCrowdSale {
       address s = msg.sender;
       owner = OwnerTuple(s,true);
   }
-  function allowance(address o,address s) private view  returns (uint) {
-      uint l = spentTotal[o][s].m;
-      uint m = allowanceTotal[o][s].m;
-      uint n = m-l;
-      return n;
-  }
   function updateTransferOnInsertTransferFrom_r0(address o,address r,address _spender2,uint n) private    {
       updateTotalInOnInsertTransfer_r26(r,n);
       updateTotalOutOnInsertTransfer_r19(o,n);
       emit Transfer(o,r,n);
-  }
-  function updateOnceFinalizeOnInsertFinalize_r13() private    {
-      onceFinalize = OnceFinalizeTuple(true,true);
   }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
@@ -300,36 +251,61 @@ contract CappedCrowdSale {
       uint convertedValue = uint(value);
       return convertedValue;
   }
-  function updateBalanceOfOnIncrementTotalOut_r3(address p,int o) private    {
-      // Empty()
+  function updateAllowanceOnIncrementAllowanceTotal_r20(address o,address s,int m) private    {
+      int _delta = int(m);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
-  function updateMintOnInsertRecv_mint_r21(address p,uint n) private   returns (bool) {
-      address s = owner.p;
-      if(s==msg.sender) {
-        if(p!=address(0)) {
-          updateTotalMintOnInsertMint_r10(p,n);
-          updateAllMintOnInsertMint_r7(n);
-          emit Mint(p,n);
-          return true;
-        }
-      }
+  function updateIncreaseAllowanceOnInsertRecv_approve_r22(address s,uint n) private   returns (bool) {
+      address o = msg.sender;
+      uint m = allowance[o][s].n;
+      uint d = n-m;
+      updateAllowanceTotalOnInsertIncreaseAllowance_r6(o,s,d);
+      emit IncreaseAllowance(o,s,d);
+      return true;
       return false;
   }
-  function updateTotalInOnInsertTransfer_r26(address p,uint n) private    {
-      int delta0 = int(n);
-      updateBalanceOfOnIncrementTotalIn_r3(p,delta0);
-      totalIn[p].n += n;
+  function updateAllowanceOnIncrementSpentTotal_r20(address o,address s,int l) private    {
+      int _delta = int(-l);
+      uint newValue = updateuintByint(allowance[o][s].n,_delta);
+      allowance[o][s].n = newValue;
   }
   function updateBurnOnInsertRecv_burn_r12(address p,uint n) private   returns (bool) {
       address s = owner.p;
       if(s==msg.sender) {
-        uint m = balanceOf(p);
+        uint m = balanceOf[p].n;
         if(p!=address(0) && n<=m) {
           updateTotalBurnOnInsertBurn_r9(p,n);
           updateAllBurnOnInsertBurn_r24(n);
           emit Burn(p,n);
           return true;
         }
+      }
+      return false;
+  }
+  function updateTotalMintOnInsertMint_r10(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalMint_r3(p,delta0);
+  }
+  function updateTotalSupplyOnInsertConstructor_r1() private    {
+      totalSupply = TotalSupplyTuple(0,true);
+  }
+  function updateAllowanceTotalOnInsertIncreaseAllowance_r6(address o,address s,uint n) private    {
+      int delta0 = int(n);
+      updateAllowanceOnIncrementAllowanceTotal_r20(o,s,delta0);
+  }
+  function updateTotalBurnOnInsertBurn_r9(address p,uint n) private    {
+      int delta0 = int(n);
+      updateBalanceOfOnIncrementTotalBurn_r3(p,delta0);
+  }
+  function updateTransferFromOnInsertRecv_transferFrom_r23(address o,address r,uint n) private   returns (bool) {
+      address s = msg.sender;
+      uint k = allowance[o][s].n;
+      uint m = balanceOf[o].n;
+      if(m>=n && k>=n) {
+        updateSpentTotalOnInsertTransferFrom_r4(o,s,n);
+        updateTransferOnInsertTransferFrom_r0(o,r,s,n);
+        return true;
       }
       return false;
   }
@@ -347,15 +323,6 @@ contract CappedCrowdSale {
           }
         }
       }
-      return false;
-  }
-  function updateIncreaseAllowanceOnInsertRecv_approve_r22(address s,uint n) private   returns (bool) {
-      address o = msg.sender;
-      uint m = allowance(o,s);
-      uint d = n-m;
-      updateAllowanceTotalOnInsertIncreaseAllowance_r6(o,s,d);
-      emit IncreaseAllowance(o,s,d);
-      return true;
       return false;
   }
 }

@@ -1,7 +1,10 @@
 .decl recv_vote(proposal: uint)
+.decl recv_addVoter(voter: address)
 .decl vote(p: address, proposal: uint)
+.decl addVoter(voter: address)
 
 .public recv_vote
+.public recv_addVoter
 
 .decl isVoter(v: address, b: bool)[0]
 .public isVoter(1)
@@ -19,7 +22,13 @@
 
 .decl *quorumSize(q: uint)
 
+.decl constructor(quorumSize: uint)
+
 vote(v,p) :- recv_vote(p), msgSender(v), hasWinner(false), voted(v, false), isVoter(v, true).
+addVoter(v) :- recv_addVoter(v), msgSender(v).
+isVoter(v, true) :- addVoter(v).
+
+quorumSize(q) :- constructor(q).
 
 votes(p,c) :- vote(_,p), c = count: vote(_,p).
 

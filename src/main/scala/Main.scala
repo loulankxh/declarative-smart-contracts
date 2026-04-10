@@ -31,16 +31,13 @@ object Main extends App {
     "wbtc.dl",
     "shib.dl",
     "linktoken.dl",
-    // "voting.dl",
+    "voting.dl",
     "auction.dl",
     "brickBlockToken.dl",
-    "cappedCrowdSale.dl",
-    "finalizableCrowdSale.dl",
-    "nft.dl",
-    "paymentSplitter.dl",
-    "stbt.dl",
-    "theta.dl",
-    "voting.dl"
+    // "paymentSplitter.dl",
+    // "stbt.dl",
+    // "theta.dl",
+    "ballot.dl"
     )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {
@@ -299,10 +296,18 @@ object Main extends App {
             }
           }
         }
-        if (judgementFlag) { // all body relations can not be skipped
+        // Rules with constructor in body: other body relations cannot be simplified
+        // (they are read as storage vars during deployment)
+        var constructorFlag = false
+        for (body <- bodies) {
+          if (body.relation.name == "constructor") constructorFlag = true
+        }
+        if (judgementFlag || constructorFlag) { // all body relations can not be skipped
+          val reservedNames = Set("recv_", "constructor", "msgSender", "msgValue", "now", "this", "thisBalance", "send", "receive")
           for (body <- bodies) {
-            if (!body.toString.startsWith("recv_"))
-              noSimplificationSet += body.relation.name
+            val name = body.relation.name
+            if (!name.startsWith("recv_") && !reservedNames.contains(name))
+              noSimplificationSet += name
           }
         }
         // contain relation which depend on others to be updated (hard to decide)

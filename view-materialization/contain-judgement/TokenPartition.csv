@@ -1,1 +1,1 @@
-balanceOfByPartition,totalSupplyByPartition,owner,msgSender,totalBalancesByPartition
+owner,balanceOfByPartition,totalBalancesByPartition,totalSupplyByPartition

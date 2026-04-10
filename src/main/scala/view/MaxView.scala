@@ -2,7 +2,7 @@ package view
 
 import com.microsoft.z3.{ArithSort, ArraySort, BitVecSort, BoolExpr, Context, Expr, Sort, TupleSort}
 import datalog.{AnyType, BooleanType, CompoundType, Literal, Max, NumberType, Param, Parameter, Relation, Rule, SymbolType, UnitType, Variable}
-import imp.{DeleteTuple, Empty, GroundVar, If, IncrementValue, Insert, InsertTuple, OnInsert, OnStatement, ReadTuple, ReplacedByKey, Statement, Trigger}
+import imp.{Call, DeleteTuple, Empty, GroundVar, If, IncrementValue, Insert, InsertTuple, OnIncrement, OnInsert, OnStatement, ReadTuple, ReplacedByKey, Statement, Trigger}
 import verification.RuleZ3Constraints
 import verification.TransitionSystem.makeStateVar
 import verification.Z3Helper.{getArraySort, getSort, makeTupleSort, paramToConst}
@@ -35,7 +35,40 @@ case class MaxView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, enable
 
   def deleteRow(deleteTuple: DeleteTuple): OnStatement = ???
 
-  def updateRow(incrementValue: IncrementValue): OnStatement = ???
+  def updateRow(incrementValue: IncrementValue): OnStatement = {
+    val insertedLiteral: Literal = getInsertedLiteral(incrementValue.relation)
+    val delta: Param = Param(insertedLiteral.fields(max.valueIndex))
+    val groupKeys: List[Parameter] = {
+      val allKeys = max.literal.fields.filterNot(_==max.aggParam).filterNot(_.name=="_")
+      rule.head.fields.intersect(allKeys)
+    }
+    // Read current value from the source relation (before increment)
+    val sourceKeys: List[Parameter] = incrementValue.keyIndices.map(i => insertedLiteral.fields(i))
+    val currentValueVar = Variable(max.aggResult._type, "_currentVal")
+    val readSourceTuple = if (!enableProjection) ReadTuple(incrementValue.relation, sourceKeys) else Empty()
+    val groundCurrentValue = GroundVar(currentValueVar, incrementValue.relation, sourceKeys,
+      incrementValue.valueIndex, enableProjection)
+    // Compute new value = updateuintByint(currentVal, delta)
+    val newValueVar = Variable(max.aggResult._type, "_newVal")
+    val deltaVar = insertedLiteral.fields(max.valueIndex)
+    val updateFuncName = s"update${max.aggResult._type}By${View.getDeltaType(max.aggResult._type)}"
+    val computeNewValue = Call(updateFuncName, List(currentValueVar, deltaVar), Some(newValueVar))
+    // Read old max from head relation
+    val readHeadTuple = if (!enableProjection) ReadTuple(rule.head.relation, groupKeys) else Empty()
+    val oldMaxVar = Variable(max.aggResult._type, "_max")
+    val groundOldMax: GroundVar = {
+      val valueIndexInHead: Int = rule.head.fields.indexOf(max.aggResult)
+      GroundVar(oldMaxVar, rule.head.relation, groupKeys, valueIndexInHead, enableProjection)
+    }
+    // Compare new value with old max; if greater, update head with new value
+    val condition = imp.Greater(Param(newValueVar), Param(oldMaxVar))
+    val modifiedHead = rule.head.rename(Map(max.aggResult -> newValueVar))
+    val insert: Insert = Insert(modifiedHead)
+    val stmt = Statement.makeSeq(readSourceTuple, groundCurrentValue, computeNewValue,
+      readHeadTuple, groundOldMax, If(condition, insert))
+    OnIncrement(insertedLiteral, incrementValue.keyIndices, updateIndex = incrementValue.valueIndex,
+      updateTarget = rule.head.relation, stmt, ruleId, isInterface)
+  }
 
   def getInsertedLiteral(relation: Relation): Literal = {
     require(relation==max.relation)

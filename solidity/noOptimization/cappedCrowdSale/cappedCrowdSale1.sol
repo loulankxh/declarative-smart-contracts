@@ -39,10 +39,6 @@ contract CappedCrowdSale {
     address p;
     bool _valid;
   }
-  struct OnceFinalizeTuple {
-    bool b;
-    bool _valid;
-  }
   struct TotalMintTuple {
     uint n;
     bool _valid;
@@ -80,14 +76,13 @@ contract CappedCrowdSale {
   mapping(address=>TotalBurnTuple) totalBurn;
   RaisedTuple raised;
   EndTuple end;
+  mapping(address=>TotalMintTuple) totalMint;
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
   mapping(address=>mapping(address=>SpentTotalTuple)) spentTotal;
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   FinalizedTuple finalized;
   OwnerTuple owner;
-  OnceFinalizeTuple onceFinalize;
-  mapping(address=>TotalMintTuple) totalMint;
   CapTuple cap;
   RateTuple rate;
   StartTuple start;
@@ -195,6 +190,17 @@ contract CappedCrowdSale {
       uint newValue = updateuintByint(allBurn.n,_delta);
       updateTotalSupplyOnInsertAllBurn_r11(newValue);
   }
+  function updateBalanceOfOnInsertTotalIn_r3(address p,uint i) private    {
+      TotalInTuple memory toDelete = totalIn[p];
+      if(toDelete._valid==true) {
+        updateBalanceOfOnDeleteTotalIn_r3(p,toDelete.n);
+      }
+      uint o = totalOut[p].n;
+      uint m = totalBurn[p].n;
+      uint n = totalMint[p].n;
+      uint s = ((n+i)-m)-o;
+      balanceOf[p] = BalanceOfTuple(s,true);
+  }
   function updateAllowanceTotalOnInsertIncreaseAllowance_r6(address o,address s,uint n) private    {
       int delta1 = int(n);
       updateAllowanceOnIncrementAllowanceTotal_r20(o,s,delta1);
@@ -217,15 +223,6 @@ contract CappedCrowdSale {
       int delta1 = int(n);
       updateBalanceOfOnIncrementTotalBurn_r3(p,delta1);
       totalBurn[p].n += n;
-  }
-  function updateBalanceOfOnDeleteTotalMint_r3(address p,uint n) private    {
-      uint i = totalIn[p].n;
-      uint o = totalOut[p].n;
-      uint m = totalBurn[p].n;
-      uint s = ((n+i)-m)-o;
-      if(s==balanceOf[p].n) {
-        balanceOf[p] = BalanceOfTuple(0,false);
-      }
   }
   function updateTotalInOnInsertTransfer_r26(address p,uint n) private    {
       int delta0 = int(n);
@@ -266,6 +263,9 @@ contract CappedCrowdSale {
         balanceOf[p] = BalanceOfTuple(0,false);
       }
   }
+  function updateOnceFinalizeOnInsertConstructor_r14() private    {
+      // Empty()
+  }
   function updateBalanceOfOnInsertTotalMint_r3(address p,uint n) private    {
       TotalMintTuple memory toDelete = totalMint[p];
       if(toDelete._valid==true) {
@@ -274,20 +274,6 @@ contract CappedCrowdSale {
       uint i = totalIn[p].n;
       uint o = totalOut[p].n;
       uint m = totalBurn[p].n;
-      uint s = ((n+i)-m)-o;
-      balanceOf[p] = BalanceOfTuple(s,true);
-  }
-  function updateOnceFinalizeOnInsertConstructor_r14() private    {
-      onceFinalize = OnceFinalizeTuple(false,true);
-  }
-  function updateBalanceOfOnInsertTotalIn_r3(address p,uint i) private    {
-      TotalInTuple memory toDelete = totalIn[p];
-      if(toDelete._valid==true) {
-        updateBalanceOfOnDeleteTotalIn_r3(p,toDelete.n);
-      }
-      uint o = totalOut[p].n;
-      uint m = totalBurn[p].n;
-      uint n = totalMint[p].n;
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
   }
@@ -375,9 +361,6 @@ contract CappedCrowdSale {
       updateTotalOutOnInsertTransfer_r19(o,n);
       emit Transfer(o,r,n);
   }
-  function updateOnceFinalizeOnInsertFinalize_r13() private    {
-      onceFinalize = OnceFinalizeTuple(true,true);
-  }
   function updateBalanceOfOnIncrementTotalMint_r3(address p,int n) private    {
       int _delta = int(n);
       uint newValue = updateuintByint(totalMint[p].n,_delta);
@@ -448,6 +431,18 @@ contract CappedCrowdSale {
   }
   function updateTotalSupplyOnInsertConstructor_r1() private    {
       totalSupply = TotalSupplyTuple(0,true);
+  }
+  function updateOnceFinalizeOnInsertFinalize_r13() private    {
+      // Empty()
+  }
+  function updateBalanceOfOnDeleteTotalMint_r3(address p,uint n) private    {
+      uint i = totalIn[p].n;
+      uint o = totalOut[p].n;
+      uint m = totalBurn[p].n;
+      uint s = ((n+i)-m)-o;
+      if(s==balanceOf[p].n) {
+        balanceOf[p] = BalanceOfTuple(0,false);
+      }
   }
   function updateAllMintOnInsertMint_r7(uint n) private    {
       int delta0 = int(n);

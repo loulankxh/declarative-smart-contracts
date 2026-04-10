@@ -99,7 +99,8 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
 //    if (primaryKeyIndices.isEmpty && !isInterface) {
     // paymentSplitter: .decl *totalReceived(n: uint)
     /** need a better way to identify functions declared manually and act as boolean functions */
-    if (primaryKeyIndices.isEmpty && !isInterface && rule.head.relation.name!="totalReceived") {
+    val allFieldsBoolean = rule.head.relation.sig.forall(_.isInstanceOf[datalog.BooleanType])
+    if (primaryKeyIndices.isEmpty && !isInterface && rule.head.relation.name!="totalReceived" && allFieldsBoolean) {
       val groundedParams: Set[Parameter] = rule.head.fields.toSet
       val innerStatement = If(condition = _getConditions(), Return(Constant.CTrue))
       val sortedLiteral: List[Literal] = {
@@ -216,8 +217,10 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
         }
         case _ => ()
       }
-      /** need a better way to identify functions declared manually and act as boolean functions */
-      if (allIndices(func.relation).isEmpty && func.relation.name!="totalReceived") boolFunctionLiterals += func // no primary key
+      /** A function with no primary keys is boolean only if all its fields are boolean-typed.
+        * Otherwise (e.g., *companyTokens(n: uint)), it's a value-returning function. */
+      val allFieldsBoolean = func.relation.sig.forall(_.isInstanceOf[BooleanType])
+      if (allIndices(func.relation).isEmpty && func.relation.name!="totalReceived" && allFieldsBoolean) boolFunctionLiterals += func // no primary key
     }
     boolFunctionLiterals
   }

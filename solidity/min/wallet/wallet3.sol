@@ -16,9 +16,9 @@ contract Wallet {
     bool _valid;
   }
   mapping(address=>TotalInTuple) totalIn;
-  TotalSupplyTuple totalSupply;
-  mapping(address=>TotalOutTuple) totalOut;
   OwnerTuple owner;
+  mapping(address=>TotalOutTuple) totalOut;
+  TotalSupplyTuple totalSupply;
   event Transfer(address from,address to,int amount);
   constructor() public {
     updateOwnerOnInsertConstructor_r2();

@@ -120,10 +120,11 @@ case class DataStructureHelper(relation: Relation, indices: List[Int], enablePro
   }
 
   def callDependentFunctions(update: UpdateStatement,
-                             dependentFunctions: Set[FunctionHelper]): Statement = {
+                             dependentFunctions: Set[FunctionHelper],
+                             functionRelations: Set[Relation] = Set()): Statement = {
     require(dependentFunctions.nonEmpty)
     update match {
-      case del:DeleteByKeys => translateDeleteByKeys(del, dependentFunctions)
+      case del:DeleteByKeys => translateDeleteByKeys(del, dependentFunctions, functionRelations)
       case inc: IncrementAndInsert => translateIncrementAndInsert(inc, dependentFunctions)
       case _: Insert | _: Delete | _: Increment => _callDependentFunctions(update, dependentFunctions)
     }
@@ -196,29 +197,54 @@ case class DataStructureHelper(relation: Relation, indices: List[Int], enablePro
     UpdateMap(relation.name,keys,valueType.name,params)
   }
 
-  private def translateDeleteByKeys(deleteByKeys: DeleteByKeys, _dependentFunctions: Set[FunctionHelper]): Statement = {
-    val tupleName: String = "toDelete"
+  private def translateDeleteByKeys(deleteByKeys: DeleteByKeys, _dependentFunctions: Set[FunctionHelper],
+                                    functionRelations: Set[Relation]): Statement = {
     val rel = deleteByKeys.relation
-    val readTuple = ReadTuple(rel, deleteByKeys.keys, tupleName)
-    val toDelete: Literal = {
-      val fields: List[Parameter] = deleteByKeys.keys ++ valueIndices.map(i=>{
-        val t = rel.sig(i)
-        val n = s"$tupleName.${rel.memberNames(i)}"
-        Variable(t,n)
-      })
-      Literal(deleteByKeys.relation, fields)
-    }
-    /** Check that toDelete exists. */
-    val isTupleValid = Match(Param(Variable(BooleanType(), s"$tupleName.${validField.name}")), Param(validBit))
+    val isFunction = functionRelations.contains(rel)
 
-    /** Only update itself */
-    val dependentFunctions = _dependentFunctions.filter(_.updateTarget==deleteByKeys.updateTarget)
-    val deleteStatements = {
-      val delete = Delete(toDelete)
-      val calls = _callDependentFunctions(delete, dependentFunctions)
-      calls
+    if (isFunction) {
+      // For function relations (not materialized): call the function to get the current value
+      val toDelete: Literal = {
+        val fields: List[Parameter] = deleteByKeys.keys ++ valueIndices.map(i => {
+          val t = rel.sig(i)
+          val keyStr = deleteByKeys.keys.map(k => s"$k").mkString(",")
+          val n = s"${rel.name}($keyStr)"
+          Variable(t, n)
+        })
+        Literal(deleteByKeys.relation, fields)
+      }
+      val dependentFunctions = _dependentFunctions.filter(_.updateTarget == deleteByKeys.updateTarget)
+      val deleteStatements = {
+        val delete = Delete(toDelete)
+        val calls = _callDependentFunctions(delete, dependentFunctions)
+        calls
+      }
+      deleteStatements
     }
-    Statement.makeSeq(readTuple, If(isTupleValid, deleteStatements))
+    else {
+      // For materialized relations: read from mapping
+      val tupleName: String = "toDelete"
+      val readTuple = ReadTuple(rel, deleteByKeys.keys, tupleName)
+      val toDelete: Literal = {
+        val fields: List[Parameter] = deleteByKeys.keys ++ valueIndices.map(i => {
+          val t = rel.sig(i)
+          val n = s"$tupleName.${rel.memberNames(i)}"
+          Variable(t, n)
+        })
+        Literal(deleteByKeys.relation, fields)
+      }
+      /** Check that toDelete exists. */
+      val isTupleValid = Match(Param(Variable(BooleanType(), s"$tupleName.${validField.name}")), Param(validBit))
+
+      /** Only update itself */
+      val dependentFunctions = _dependentFunctions.filter(_.updateTarget == deleteByKeys.updateTarget)
+      val deleteStatements = {
+        val delete = Delete(toDelete)
+        val calls = _callDependentFunctions(delete, dependentFunctions)
+        calls
+      }
+      Statement.makeSeq(readTuple, If(isTupleValid, deleteStatements))
+    }
   }
 
   def deleteStatement(delete: Delete): Statement = delete.relation match {

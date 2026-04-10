@@ -1,8 +1,8 @@
-totalIn,totalMint,allowance,totalOut,this,owner,pendingOwner,totalBurn,totalSupply,totalBalances,paused,,balanceOf
-totalIn,totalBalances,totalMint,totalOut,decreaseAllowanceTotal,this,owner,pendingOwner,totalBurn,totalSupply,spentTotal,allowanceTotal,paused,,balanceOf,allowance
-totalBalances,pendingOwner,spentTotal,balanceOf,decreaseAllowanceTotal,this,owner,allMint,allBurn,allowanceTotal,paused,,totalSupply,allowance
-totalIn,totalBalances,pendingOwner,spentTotal,totalMint,totalOut,decreaseAllowanceTotal,this,owner,allMint,totalBurn,allBurn,allowanceTotal,paused,,totalSupply,balanceOf,allowance
-totalIn,totalBalances,pendingOwner,totalMint,allowance,totalOut,this,owner,allMint,totalBurn,allBurn,paused,,totalSupply,balanceOf
-spentTotal,balanceOf,decreaseAllowanceTotal,this,owner,pendingOwner,totalSupply,totalBalances,allowanceTotal,paused,,allowance
-allBurn,balanceOf,allowance,this,owner,pendingOwner,totalBalances,paused,allMint,,totalSupply
-balanceOf,allowance,this,owner,pendingOwner,totalSupply,totalBalances,paused,
+allMint,this,owner,totalBalances,allBurn,allowance,paused,balanceOf,pendingOwner,,totalSupply
+totalBurn,this,owner,totalSupply,totalBalances,totalIn,totalOut,totalMint,spentTotal,decreaseAllowanceTotal,paused,allowanceTotal,pendingOwner,,allowance,balanceOf
+totalBurn,allowance,this,owner,totalBalances,totalIn,totalOut,totalMint,allBurn,allMint,paused,pendingOwner,,balanceOf,totalSupply
+this,owner,totalSupply,totalBalances,spentTotal,decreaseAllowanceTotal,paused,balanceOf,allowanceTotal,pendingOwner,,allowance
+totalBurn,this,owner,totalSupply,totalBalances,totalIn,totalOut,totalMint,allowance,paused,pendingOwner,,balanceOf
+spentTotal,this,paused,owner,totalBalances,allBurn,decreaseAllowanceTotal,allMint,balanceOf,allowanceTotal,pendingOwner,,allowance,totalSupply
+this,owner,totalSupply,totalBalances,allowance,paused,balanceOf,pendingOwner,
+spentTotal,totalBurn,this,owner,totalBalances,totalIn,totalOut,totalMint,allBurn,decreaseAllowanceTotal,allMint,paused,allowanceTotal,pendingOwner,,allowance,balanceOf,totalSupply

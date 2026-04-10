@@ -405,6 +405,11 @@ object Statement {
         val newKeys = keyList.map(k=>mapping.getOrElse(k,k))
         ReadTuple(relation, newKeys, outputVar)
       }
+      case Call(functionName, params, optReturnVar) => {
+        val newParams = params.map(p => mapping.getOrElse(p, p))
+        val newRet = optReturnVar.map(v => mapping.getOrElse(v, v).asInstanceOf[Variable])
+        Call(functionName, newParams, newRet)
+      }
       case _ => {
         ???
       }

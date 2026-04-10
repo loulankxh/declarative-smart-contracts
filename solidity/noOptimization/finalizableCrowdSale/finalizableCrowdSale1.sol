@@ -39,10 +39,6 @@ contract FinalizableCrowdSale {
     uint time;
     bool _valid;
   }
-  struct OnceFinalizeTuple {
-    bool b;
-    bool _valid;
-  }
   struct TotalMintTuple {
     uint n;
     bool _valid;
@@ -71,6 +67,7 @@ contract FinalizableCrowdSale {
   mapping(address=>TotalOutTuple) totalOut;
   mapping(address=>TotalBurnTuple) totalBurn;
   EndTuple end;
+  mapping(address=>TotalMintTuple) totalMint;
   RateTuple rate;
   AllMintTuple allMint;
   mapping(address=>mapping(address=>AllowanceTotalTuple)) allowanceTotal;
@@ -78,8 +75,6 @@ contract FinalizableCrowdSale {
   mapping(address=>mapping(address=>AllowanceTuple)) allowance;
   FinalizedTuple finalized;
   OwnerTuple owner;
-  OnceFinalizeTuple onceFinalize;
-  mapping(address=>TotalMintTuple) totalMint;
   StartTuple start;
   TotalSupplyTuple totalSupply;
   mapping(address=>BalanceOfTuple) balanceOf;
@@ -281,6 +276,9 @@ contract FinalizableCrowdSale {
       updateBalanceOfOnIncrementTotalOut_r6(p,delta2);
       totalOut[p].n += n;
   }
+  function updateOnceFinalizeOnInsertFinalize_r16() private    {
+      // Empty()
+  }
   function updateAllowanceTotalOnInsertIncreaseAllowance_r11(address o,address s,uint n) private    {
       int delta1 = int(n);
       updateAllowanceOnIncrementAllowanceTotal_r19(o,s,delta1);
@@ -314,6 +312,9 @@ contract FinalizableCrowdSale {
       uint n = totalMint[p].n;
       uint s = ((n+i)-m)-o;
       balanceOf[p] = BalanceOfTuple(s,true);
+  }
+  function updateOnceFinalizeOnInsertConstructor_r5() private    {
+      // Empty()
   }
   function updateTransferOnInsertRecv_transfer_r17(address r,uint n) private   returns (bool) {
       address s = msg.sender;
@@ -452,12 +453,6 @@ contract FinalizableCrowdSale {
       int _delta = int(m);
       uint newValue = updateuintByint(totalBurn[p].n,_delta);
       updateBalanceOfOnInsertTotalBurn_r6(p,newValue);
-  }
-  function updateOnceFinalizeOnInsertFinalize_r16() private    {
-      onceFinalize = OnceFinalizeTuple(true,true);
-  }
-  function updateOnceFinalizeOnInsertConstructor_r5() private    {
-      onceFinalize = OnceFinalizeTuple(false,true);
   }
   function updateBalanceOfOnIncrementTotalMint_r6(address p,int n) private    {
       int _delta = int(n);

@@ -34,7 +34,11 @@ contract Voting {
   HasWinnerTuple hasWinner;
   mapping(uint=>VotesTuple) votes;
   mapping(uint=>WinsTuple) wins;
+  event AddVoter(address voter);
   event Vote(address p,uint proposal);
+  constructor(uint quorumSize) public {
+    updateQuorumSizeOnInsertConstructor_r1(quorumSize);
+  }
   function getWinningProposal() public view  returns (uint) {
       uint proposal = winningProposal.proposal;
       return proposal;
@@ -42,6 +46,12 @@ contract Voting {
   function getHasWinner() public view  returns (bool) {
       bool b = hasWinner.b;
       return b;
+  }
+  function vote(uint proposal) public    {
+      bool r8 = updateVoteOnInsertRecv_vote_r8(proposal);
+      if(r8==false) {
+        revert("Rule condition failed");
+      }
   }
   function getIsVoter(address v) public view  returns (bool) {
       bool b = isVoter[v].b;
@@ -59,47 +69,43 @@ contract Voting {
       uint c = votes[proposal].c;
       return c;
   }
-  function vote(uint proposal) public    {
-      bool r5 = updateVoteOnInsertRecv_vote_r5(proposal);
-      if(r5==false) {
+  function addVoter(address voter) public    {
+      bool r0 = updateAddVoterOnInsertRecv_addVoter_r0(voter);
+      if(r0==false) {
         revert("Rule condition failed");
       }
   }
-  function updateHasWinnerOnInsertWins_r1(uint _proposal0,bool b) private    {
+  function updateHasWinnerOnDeleteWins_r3(uint _proposal0,bool b) private    {
+      if(b==true) {
+        hasWinner = HasWinnerTuple(false,false);
+      }
+  }
+  function updateWinsOnDeleteVotes_r4(uint p,uint c) private    {
+      uint q = quorumSize.q;
+      if(c>=q) {
+        updateHasWinnerOnDeleteWins_r3(p,bool(true));
+        updateWinningProposalOnDeleteWins_r6(p,bool(true));
+        if(true==wins[p].b) {
+          wins[p] = WinsTuple(false,false);
+        }
+      }
+  }
+  function updateVotedOnInsertVote_r5(address v,uint _proposal1) private    {
+      voted[v] = VotedTuple(true,true);
+  }
+  function updateHasWinnerOnInsertWins_r3(uint _proposal0,bool b) private    {
       WinsTuple memory toDelete = wins[_proposal0];
       if(toDelete._valid==true) {
-        updateHasWinnerOnDeleteWins_r1(_proposal0,toDelete.b);
+        updateHasWinnerOnDeleteWins_r3(_proposal0,toDelete.b);
       }
       if(b==true) {
         hasWinner = HasWinnerTuple(true,true);
       }
   }
-  function updateVotedOnInsertVote_r3(address v,uint _proposal1) private    {
-      voted[v] = VotedTuple(true,true);
-  }
-  function updateWinningProposalOnInsertWins_r4(uint p,bool b) private    {
-      WinsTuple memory toDelete = wins[p];
-      if(toDelete._valid==true) {
-        updateWinningProposalOnDeleteWins_r4(p,toDelete.b);
-      }
-      if(b==true) {
-        winningProposal = WinningProposalTuple(p,true);
-      }
-  }
-  function updateWinningProposalOnDeleteWins_r4(uint p,bool b) private    {
-      if(b==true) {
-        winningProposal = WinningProposalTuple(0,false);
-      }
-  }
-  function updateVotesOnInsertVote_r0(address _p0,uint p) private    {
-      int delta0 = int(1);
-      updateWinsOnIncrementVotes_r2(p,delta0);
+  function updateVotesOnInsertVote_r2(address _p0,uint p) private    {
+      int delta1 = int(1);
+      updateWinsOnIncrementVotes_r4(p,delta1);
       votes[p].c += 1;
-  }
-  function updateWinsOnIncrementVotes_r2(uint p,int c) private    {
-      int _delta = int(c);
-      uint newValue = updateuintByint(votes[p].c,_delta);
-      updateWinsOnInsertVotes_r2(p,newValue);
   }
   function updateuintByint(uint x,int delta) private   returns (uint) {
       int convertedX = int(x);
@@ -107,35 +113,49 @@ contract Voting {
       uint convertedValue = uint(value);
       return convertedValue;
   }
-  function updateWinsOnDeleteVotes_r2(uint p,uint c) private    {
-      uint q = quorumSize.q;
-      if(c>=q) {
-        updateHasWinnerOnDeleteWins_r1(p,bool(true));
-        updateWinningProposalOnDeleteWins_r4(p,bool(true));
-        if(true==wins[p].b) {
-          wins[p] = WinsTuple(false,false);
-        }
-      }
+  function updateWinsOnIncrementVotes_r4(uint p,int c) private    {
+      int _delta = int(c);
+      uint newValue = updateuintByint(votes[p].c,_delta);
+      updateWinsOnInsertVotes_r4(p,newValue);
   }
-  function updateWinsOnInsertVotes_r2(uint p,uint c) private    {
+  function updateIsVoterOnInsertAddVoter_r7(address v) private    {
+      isVoter[v] = IsVoterTuple(true,true);
+  }
+  function updateAddVoterOnInsertRecv_addVoter_r0(address v) private   returns (bool) {
+      if(v==msg.sender) {
+        updateIsVoterOnInsertAddVoter_r7(v);
+        emit AddVoter(v);
+        return true;
+      }
+      return false;
+  }
+  function updateWinsOnInsertVotes_r4(uint p,uint c) private    {
       VotesTuple memory toDelete = votes[p];
       if(toDelete._valid==true) {
-        updateWinsOnDeleteVotes_r2(p,toDelete.c);
+        updateWinsOnDeleteVotes_r4(p,toDelete.c);
       }
       uint q = quorumSize.q;
       if(c>=q) {
-        updateHasWinnerOnInsertWins_r1(p,bool(true));
-        updateWinningProposalOnInsertWins_r4(p,bool(true));
+        updateHasWinnerOnInsertWins_r3(p,bool(true));
+        updateWinningProposalOnInsertWins_r6(p,bool(true));
         wins[p] = WinsTuple(true,true);
       }
   }
-  function updateVoteOnInsertRecv_vote_r5(uint p) private   returns (bool) {
+  function updateWinningProposalOnDeleteWins_r6(uint p,bool b) private    {
+      if(b==true) {
+        winningProposal = WinningProposalTuple(0,false);
+      }
+  }
+  function updateQuorumSizeOnInsertConstructor_r1(uint q) private    {
+      quorumSize = QuorumSizeTuple(q,true);
+  }
+  function updateVoteOnInsertRecv_vote_r8(uint p) private   returns (bool) {
       if(false==hasWinner.b) {
         address v = msg.sender;
         if(true==isVoter[v].b) {
           if(false==voted[v].b) {
-            updateVotedOnInsertVote_r3(v,p);
-            updateVotesOnInsertVote_r0(v,p);
+            updateVotesOnInsertVote_r2(v,p);
+            updateVotedOnInsertVote_r5(v,p);
             emit Vote(v,p);
             return true;
           }
@@ -143,9 +163,13 @@ contract Voting {
       }
       return false;
   }
-  function updateHasWinnerOnDeleteWins_r1(uint _proposal0,bool b) private    {
+  function updateWinningProposalOnInsertWins_r6(uint p,bool b) private    {
+      WinsTuple memory toDelete = wins[p];
+      if(toDelete._valid==true) {
+        updateWinningProposalOnDeleteWins_r6(p,toDelete.b);
+      }
       if(b==true) {
-        hasWinner = HasWinnerTuple(false,false);
+        winningProposal = WinningProposalTuple(p,true);
       }
   }
 }
