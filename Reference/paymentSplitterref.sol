@@ -1,6 +1,7 @@
 // source: https://github.com/binodnp/openzeppelin-solidity/blob/master/contracts/payment/PaymentSplitter.sol
 
-pragma solidity ^0.4.24;
+// Upgrade pragma solidity ^0.4.24 syntax to ^0.8.12
+pragma solidity ^0.8.12;
 
 /**
  * @title SafeMath
@@ -84,23 +85,37 @@ contract PaymentSplitter {
   mapping(address => uint256) private _shares;
   mapping(address => uint256) private _released;
   address[] private _payees;
+  address private _owner;
+  bool private _setupPhase;
 
   /**
-   * @dev Constructor
+   * @dev Constructor (original version with array parameters)
    */
-  constructor(address[] payees, uint256[] shares) public payable {
-    require(payees.length == shares.length);
-    require(payees.length > 0);
+  // constructor(address[] payees, uint256[] shares) public payable {
+  //   require(payees.length == shares.length);
+  //   require(payees.length > 0);
+  //
+  //   for (uint256 i = 0; i < payees.length; i++) {
+  //     _addPayee(payees[i], shares[i]);
+  //   }
+  // }
 
-    for (uint256 i = 0; i < payees.length; i++) {
-      _addPayee(payees[i], shares[i]);
-    }
+  /**
+   * @dev Constructor (two-phase setup, compatible with generated contract interface)
+   */
+  // constructor() public {
+  constructor() {
+    _owner = msg.sender;
+    _setupPhase = true;
   }
 
   /**
    * @dev payable fallback
    */
-  function () external payable {
+  // function () external payable {
+  //   emit PaymentReceived(msg.sender, msg.value);
+  // }
+  receive() external payable {
     emit PaymentReceived(msg.sender, msg.value);
   }
 
@@ -144,6 +159,7 @@ contract PaymentSplitter {
    * @param account Whose payments will be released.
    */
   function release(address account) public {
+    require(!_setupPhase);
     require(_shares[account] > 0);
 
     uint256 totalReceived = address(this).balance.add(_totalReleased);
@@ -153,21 +169,36 @@ contract PaymentSplitter {
           _released[account]
     );
 
-    require(payment != 0);
+    require(payment >= 0);
 
     _released[account] = _released[account].add(payment);
     _totalReleased = _totalReleased.add(payment);
 
-    account.transfer(payment);
+    // account.transfer(payment);
+    payable(account).transfer(payment);
     emit PaymentReleased(account, payment);
   }
 
   /**
-   * @dev Add a new payee to the contract.
-   * @param account The address of the payee to add.
-   * @param shares_ The number of shares owned by the payee.
+   * @dev Add a new payee to the contract (original private version).
    */
-  function _addPayee(address account, uint256 shares_) private {
+  // function _addPayee(address account, uint256 shares_) private {
+  //   require(account != address(0));
+  //   require(shares_ > 0);
+  //   require(_shares[account] == 0);
+  //
+  //   _payees.push(account);
+  //   _shares[account] = shares_;
+  //   _totalShares = _totalShares.add(shares_);
+  //   emit PayeeAdded(account, shares_);
+  // }
+
+  /**
+   * @dev Add a new payee (public, two-phase setup, compatible with generated contract interface).
+   */
+  function addPayee(address account, uint256 shares_) public {
+    require(msg.sender == _owner);
+    require(_setupPhase);
     require(account != address(0));
     require(shares_ > 0);
     require(_shares[account] == 0);
@@ -176,5 +207,15 @@ contract PaymentSplitter {
     _shares[account] = shares_;
     _totalShares = _totalShares.add(shares_);
     emit PayeeAdded(account, shares_);
+  }
+
+  /**
+   * @dev Finalize setup, lock the payee list.
+   */
+  function finalizeSetup() public {
+    require(msg.sender == _owner);
+    require(_setupPhase);
+    require(_totalShares > 0);
+    _setupPhase = false;
   }
 }

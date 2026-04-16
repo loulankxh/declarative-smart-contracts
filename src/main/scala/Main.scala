@@ -18,7 +18,6 @@ object Main extends App {
     //"nft.dl",
     "wallet.dl",
     "vestingWallet.dl",
-    //"paymentSplitter.dl",
     "erc777.dl",
      //"erc1155.dl", // Lan: broke when run dependency-graph
     "controllable.dl",
@@ -34,10 +33,13 @@ object Main extends App {
     "voting.dl",
     "auction.dl",
     "brickBlockToken.dl",
-    // "paymentSplitter.dl",
+    "paymentSplitter.dl",
     // "stbt.dl",
     // "theta.dl",
-    "ballot.dl"
+    "ballot.dl",
+    // "bat.dl",
+    "zrx.dl",
+    // "golemNetworkToken.dl",
     )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {

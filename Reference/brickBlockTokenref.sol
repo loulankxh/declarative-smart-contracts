@@ -1,6 +1,7 @@
 //source:  https://etherscan.io/address/0x4a6058666cf1057eac3cd3a5a614620547559fc9#code
 
-pragma solidity 0.4.18;
+// pragma solidity ^0.8.0
+pragma solidity ^0.8.0;
 
 // File: zeppelin-solidity/contracts/ownership/Ownable.sol
 
@@ -20,7 +21,7 @@ contract Ownable {
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
-  function Ownable() public {
+  constructor() {
     owner = msg.sender;
   }
 
@@ -40,7 +41,7 @@ contract Ownable {
    */
   function transferOwnership(address newOwner) public onlyOwner {
     require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
+    emit OwnershipTransferred(owner, newOwner);
     owner = newOwner;
   }
 
@@ -80,7 +81,7 @@ contract Pausable is Ownable {
    */
   function pause() onlyOwner whenNotPaused public {
     paused = true;
-    Pause();
+    emit Pause();
   }
 
   /**
@@ -88,7 +89,7 @@ contract Pausable is Ownable {
    */
   function unpause() onlyOwner whenPaused public {
     paused = false;
-    Unpause();
+    emit Unpause();
   }
 }
 
@@ -134,10 +135,10 @@ library SafeMath {
  * @dev Simpler version of ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/179
  */
-contract ERC20Basic {
+abstract contract ERC20Basic {
   uint256 public totalSupply;
-  function balanceOf(address who) public view returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
+  function balanceOf(address who) public view virtual returns (uint256);
+  function transfer(address to, uint256 value) public virtual returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
@@ -157,14 +158,14 @@ contract BasicToken is ERC20Basic {
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
   */
-  function transfer(address _to, uint256 _value) public returns (bool) {
+  function transfer(address _to, uint256 _value) public virtual override returns (bool) {
     require(_to != address(0));
     require(_value <= balances[msg.sender]);
 
     // SafeMath.sub will throw if there is not enough balance.
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
-    Transfer(msg.sender, _to, _value);
+    emit Transfer(msg.sender, _to, _value);
     return true;
   }
 
@@ -173,7 +174,7 @@ contract BasicToken is ERC20Basic {
   * @param _owner The address to query the the balance of.
   * @return An uint256 representing the amount owned by the passed address.
   */
-  function balanceOf(address _owner) public view returns (uint256 balance) {
+  function balanceOf(address _owner) public view virtual override returns (uint256 balance) {
     return balances[_owner];
   }
 
@@ -185,10 +186,10 @@ contract BasicToken is ERC20Basic {
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
-contract ERC20 is ERC20Basic {
-  function allowance(address owner, address spender) public view returns (uint256);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address spender, uint256 value) public returns (bool);
+abstract contract ERC20 is ERC20Basic {
+  function allowance(address owner, address spender) public view virtual returns (uint256);
+  function transferFrom(address from, address to, uint256 value) public virtual returns (bool);
+  function approve(address spender, uint256 value) public virtual returns (bool);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
@@ -212,7 +213,7 @@ contract StandardToken is ERC20, BasicToken {
    * @param _to address The address which you want to transfer to
    * @param _value uint256 the amount of tokens to be transferred
    */
-  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+  function transferFrom(address _from, address _to, uint256 _value) public virtual override returns (bool) {
     require(_to != address(0));
     require(_value <= balances[_from]);
     require(_value <= allowed[_from][msg.sender]);
@@ -220,7 +221,7 @@ contract StandardToken is ERC20, BasicToken {
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-    Transfer(_from, _to, _value);
+    emit Transfer(_from, _to, _value);
     return true;
   }
 
@@ -234,9 +235,9 @@ contract StandardToken is ERC20, BasicToken {
    * @param _spender The address which will spend the funds.
    * @param _value The amount of tokens to be spent.
    */
-  function approve(address _spender, uint256 _value) public returns (bool) {
+  function approve(address _spender, uint256 _value) public virtual override returns (bool) {
     allowed[msg.sender][_spender] = _value;
-    Approval(msg.sender, _spender, _value);
+    emit Approval(msg.sender, _spender, _value);
     return true;
   }
 
@@ -246,7 +247,7 @@ contract StandardToken is ERC20, BasicToken {
    * @param _spender address The address which will spend the funds.
    * @return A uint256 specifying the amount of tokens still available for the spender.
    */
-  function allowance(address _owner, address _spender) public view returns (uint256) {
+  function allowance(address _owner, address _spender) public view virtual override returns (uint256) {
     return allowed[_owner][_spender];
   }
 
@@ -260,9 +261,9 @@ contract StandardToken is ERC20, BasicToken {
    * @param _spender The address which will spend the funds.
    * @param _addedValue The amount of tokens to increase the allowance by.
    */
-  function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
+  function increaseApproval(address _spender, uint _addedValue) public virtual returns (bool) {
     allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -276,14 +277,14 @@ contract StandardToken is ERC20, BasicToken {
    * @param _spender The address which will spend the funds.
    * @param _subtractedValue The amount of tokens to decrease the allowance by.
    */
-  function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
+  function decreaseApproval(address _spender, uint _subtractedValue) public virtual returns (bool) {
     uint oldValue = allowed[msg.sender][_spender];
     if (_subtractedValue > oldValue) {
       allowed[msg.sender][_spender] = 0;
     } else {
       allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -299,23 +300,23 @@ contract StandardToken is ERC20, BasicToken {
 
 contract PausableToken is StandardToken, Pausable {
 
-  function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
+  function transfer(address _to, uint256 _value) public virtual override whenNotPaused returns (bool) {
     return super.transfer(_to, _value);
   }
 
-  function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
+  function transferFrom(address _from, address _to, uint256 _value) public virtual override whenNotPaused returns (bool) {
     return super.transferFrom(_from, _to, _value);
   }
 
-  function approve(address _spender, uint256 _value) public whenNotPaused returns (bool) {
+  function approve(address _spender, uint256 _value) public virtual override whenNotPaused returns (bool) {
     return super.approve(_spender, _value);
   }
 
-  function increaseApproval(address _spender, uint _addedValue) public whenNotPaused returns (bool success) {
+  function increaseApproval(address _spender, uint _addedValue) public virtual override whenNotPaused returns (bool success) {
     return super.increaseApproval(_spender, _addedValue);
   }
 
-  function decreaseApproval(address _spender, uint _subtractedValue) public whenNotPaused returns (bool success) {
+  function decreaseApproval(address _spender, uint _subtractedValue) public virtual override whenNotPaused returns (bool success) {
     return super.decreaseApproval(_spender, _subtractedValue);
   }
 }
@@ -349,26 +350,24 @@ contract BrickblockToken is PausableToken {
 
   // This modifier is used in `distributeTokens()` and ensures that no more than 51% of the total supply can be distributed
   modifier supplyAvailable(uint256 _value) {
-    uint256 _distributedTokens = initialSupply.sub(balances[this].add(bonusTokens));
+    uint256 _distributedTokens = initialSupply.sub(balances[address(this)].add(bonusTokens));
     uint256 _maxDistributedAmount = initialSupply.mul(contributorsShare).div(100);
     require(_distributedTokens.add(_value) <= _maxDistributedAmount);
     _;
   }
 
-  function BrickblockToken(address _bonusDistributionAddress)
-    public
-  {
+  constructor(address _bonusDistributionAddress) {
     require(_bonusDistributionAddress != address(0));
     bonusTokens = initialSupply.mul(bonusShare).div(100);
     companyTokens = initialSupply.mul(companyShare).div(100);
     bonusDistributionAddress = _bonusDistributionAddress;
     totalSupply = initialSupply;
-    balances[this] = initialSupply;
-    Transfer(address(0), this, initialSupply);
+    balances[address(this)] = initialSupply;
+    emit Transfer(address(0), address(this), initialSupply);
     // distribute bonusTokens to bonusDistributionAddress
-    balances[this] = balances[this].sub(bonusTokens);
+    balances[address(this)] = balances[address(this)].sub(bonusTokens);
     balances[bonusDistributionAddress] = balances[bonusDistributionAddress].add(bonusTokens);
-    Transfer(this, bonusDistributionAddress, bonusTokens);
+    emit Transfer(address(this), bonusDistributionAddress, bonusTokens);
     // we need to start with trading paused to make sure that there can be no transfers while the token sale is still ongoing
     // we will unpause the contract manually after finalizing the token sale by calling `unpause()` which is a function inherited from PausableToken
     paused = true;
@@ -419,9 +418,9 @@ contract BrickblockToken is PausableToken {
     require(tokenSaleActive == true);
     require(_contributor != address(0));
     require(_contributor != owner);
-    balances[this] = balances[this].sub(_value);
+    balances[address(this)] = balances[address(this)].sub(_value);
     balances[_contributor] = balances[_contributor].add(_value);
-    Transfer(this, _contributor, _value);
+    emit Transfer(address(this), _contributor, _value);
     return true;
   }
 
@@ -435,7 +434,7 @@ contract BrickblockToken is PausableToken {
     require(_recipient != owner);
     balances[bonusDistributionAddress] = balances[bonusDistributionAddress].sub(_value);
     balances[_recipient] = balances[_recipient].add(_value);
-    Transfer(bonusDistributionAddress, _recipient, _value);
+    emit Transfer(bonusDistributionAddress, _recipient, _value);
     return true;
   }
 
@@ -450,22 +449,22 @@ contract BrickblockToken is PausableToken {
     // ensure that fountainContractAddress has been set
     require(fountainContractAddress != address(0));
     // calculate new total supply. need to do this in two steps in order to have accurate totalSupply due to integer division
-    uint256 _distributedTokens = initialSupply.sub(balances[this].add(bonusTokens));
+    uint256 _distributedTokens = initialSupply.sub(balances[address(this)].add(bonusTokens));
     uint256 _newTotalSupply = _distributedTokens.add(bonusTokens.add(companyTokens));
     // unpurchased amount of tokens which will be burned
     uint256 _burnAmount = totalSupply.sub(_newTotalSupply);
     // leave remaining balance for company to be claimed at later date
-    balances[this] = balances[this].sub(_burnAmount);
-    Burn(this, _burnAmount);
+    balances[address(this)] = balances[address(this)].sub(_burnAmount);
+    emit Burn(address(this), _burnAmount);
     // allow our fountain contract to transfer the company tokens to itself
-    allowed[this][fountainContractAddress] = companyTokens;
-    Approval(this, fountainContractAddress, companyTokens);
+    allowed[address(this)][fountainContractAddress] = companyTokens;
+    emit Approval(address(this), fountainContractAddress, companyTokens);
     // set new totalSupply
     totalSupply = _newTotalSupply;
     // prevent this function from ever running again after finalizing the token sale
     tokenSaleActive = false;
     // dispatch event showing sale is finished
-    TokenSaleFinished(
+    emit TokenSaleFinished(
       totalSupply,
       _distributedTokens,
       bonusTokens,
@@ -476,9 +475,11 @@ contract BrickblockToken is PausableToken {
   }
 
   // fallback function - do not allow any eth transfers to this contract
-  function()
-    external
-  {
+  fallback() external {
+    revert();
+  }
+
+  receive() external payable {
     revert();
   }
 

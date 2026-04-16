@@ -2,7 +2,7 @@ package view
 
 import com.microsoft.z3.{ArithExpr, ArithSort, ArraySort, BoolExpr, Context, Expr, IntExpr, IntSort, Sort, TupleSort}
 import datalog.{Add, AnyType, ArithOperator, Arithmetic, Assign, BinaryOperator, BooleanType, CompoundType, Constant, Equal, Functor, Geq, Greater, Leq, Lesser, Literal, MsgSender, MsgValue, Mul, Negative, Now, NumberType, One, Param, Parameter, Relation, ReservedRelation, Rule, Send, SimpleRelation, SingletonRelation, Sub, SymbolType, Type, Unequal, UnitType, Variable, Zero}
-import imp.{BooleanFunction, Condition, Delete, DeleteTuple, Empty, GroundVar, GroundVarFromFunction, If, Increment, IncrementAndInsert, IncrementValue, Insert, InsertTuple, Match, MatchRelationField, OnDelete, OnIncrement, OnInsert, OnStatement, ReadTuple, ReplacedByKey, Require, Return, Search, Statement, Trigger, True, UpdateDependentRelations, UpdateStatement}
+import imp.{And, BooleanFunction, Condition, Delete, DeleteTuple, Empty, False, GroundVar, GroundVarFromFunction, If, Increment, IncrementAndInsert, IncrementValue, Insert, InsertTuple, Match, MatchRelationField, OnDelete, OnIncrement, OnInsert, OnStatement, Or, ReadTuple, ReplacedByKey, Require, Return, Search, Statement, Trigger, True, UpdateDependentRelations, UpdateStatement}
 import imp.SolidityTranslator.transactionRelationPrefix
 import verification.RuleZ3Constraints
 import verification.TransitionSystem.makeStateVar
@@ -73,15 +73,27 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
   private def getNewRowDerivationStatements(insert: Literal, updateStatement: Statement): Statement = {
 
     /** Generate assign statements for functors */
-    val assignStatements = rule.functors.foldLeft[Statement](Empty())(
-      (stmt, f) => f match {
-        case datalog.Assign(p, a) => Statement.makeSeq(stmt,imp.Assign(p,a))
-        case _ => stmt
-      }
-    )
+    val allAssigns: List[datalog.Assign] = rule.functors.collect {
+      case a: datalog.Assign => a
+    }.toList
 
     val condition = _getConditions()
-    val IfStatement: If = If(condition, Statement.makeSeq(assignStatements,updateStatement))
+
+    /** Collect all parameters referenced in the condition */
+    val conditionParams: Set[Parameter] = _getConditionParams(condition)
+
+    /** Split assigns: those whose target variable is referenced in the condition
+      * must be placed before the if statement, not inside it. */
+    val (preAssigns, innerAssigns) = allAssigns.partition(a => conditionParams.contains(a.a.p))
+
+    val preAssignStatements = preAssigns.foldLeft[Statement](Empty())(
+      (stmt, a) => Statement.makeSeq(stmt, imp.Assign(a.a, a.b))
+    )
+    val innerAssignStatements = innerAssigns.foldLeft[Statement](Empty())(
+      (stmt, a) => Statement.makeSeq(stmt, imp.Assign(a.a, a.b))
+    )
+
+    val IfStatement: If = If(condition, Statement.makeSeq(innerAssignStatements, updateStatement))
 
     // Join
     val groundedParams: Set[Parameter] = insert.fields.toSet
@@ -90,7 +102,8 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
       val rest = rule.body.filterNot(_.relation==insert.relation).diff(getBooleanFunctionLiterals(functionLiterals))
       sortJoinLiterals(rest)
     }
-    val updates = _getJoinStatements(groundedParams, sortedLiteral, IfStatement)
+    val innerBlock = Statement.makeSeq(preAssignStatements, IfStatement)
+    val updates = _getJoinStatements(groundedParams, sortedLiteral, innerBlock)
     // OnInsert(insert, rule.head.relation, updates)
     updates
   }
@@ -149,6 +162,20 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
     Condition.conjunction(functorCondition,functionCondition)
   }
 
+  /** Collect all parameters referenced in a condition tree. */
+  private def _getConditionParams(cond: Condition): Set[Parameter] = cond match {
+    case _: True | _: False => Set()
+    case imp.Greater(a, b) => a.getParameters() ++ b.getParameters()
+    case imp.Lesser(a, b) => a.getParameters() ++ b.getParameters()
+    case imp.Geq(a, b) => a.getParameters() ++ b.getParameters()
+    case imp.Leq(a, b) => a.getParameters() ++ b.getParameters()
+    case imp.Match(a, b) => a.getParameters() ++ b.getParameters()
+    case imp.Unequal(a, b) => a.getParameters() ++ b.getParameters()
+    case And(a, b) => _getConditionParams(a) ++ _getConditionParams(b)
+    case Or(a, b) => _getConditionParams(a) ++ _getConditionParams(b)
+    case MatchRelationField(_, _, _, p, _, _) => Set(p)
+    case BooleanFunction(_, parameters) => parameters.toSet
+  }
 
   def getInsertedLiteral(relation: Relation): Literal = {
     val _lits = rule.body.filter(_.relation == relation)
@@ -317,11 +344,18 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
 
   private def isUpdatable(incrementValue: IncrementValue): Boolean = {
     /** Check that the incremented value is not matched with other fields.
-     * And is differentiable in another functor
+     * And is differentiable in another functor, or is a direct copy rule.
      *  */
     val literal = getInsertedLiteral(incrementValue.relation)
     val newParam = literal.fields(incrementValue.valueIndex)
     val isMatchedInBody = (rule.body - literal).exists(_.fields.contains(newParam))
+    /** Direct copy rule: single body literal, no functors, and the incremented value field
+      * maps directly to a non-primary-key (value) field in the head.
+      * e.g., released(p, s) :- totalReleaseOf(p, s). */
+    val isDirectCopy = rule.functors.isEmpty && rule.body.size == 1 && {
+      val headValueIndices = rule.head.fields.indices.filterNot(primaryKeyIndices.contains)
+      headValueIndices.exists(i => rule.head.fields(i) == newParam)
+    }
     val existDifferentiableFunctor = rule.functors.exists {
       case _:Greater|_:Lesser|_:datalog.Geq|_:datalog.Leq|_:datalog.Unequal|_:datalog.Equal => false
       case datalog.Assign(_, b) => b match {
@@ -329,38 +363,48 @@ case class JoinView(rule: Rule, primaryKeyIndices: List[Int], ruleId: Int, allIn
         case _ => ???
       }
     }
-    existDifferentiableFunctor && !isMatchedInBody
+    (existDifferentiableFunctor || isDirectCopy) && !isMatchedInBody
   }
 
   private def updateOnIncrementValue(incrementValue: IncrementValue): Increment = {
-    val assignment: datalog.Assign = {
-      val assignments: Set[datalog.Assign] = rule.functors.flatMap{
-        case a: datalog.Assign => Some(a)
-        case _ => None
-      }
+    val assignments: Set[datalog.Assign] = rule.functors.flatMap{
+      case a: datalog.Assign => Some(a)
+      case _ => None
+    }
+    if (assignments.isEmpty) {
+      /** Direct copy rule: delta passes through directly.
+        * e.g., released(p, s) :- totalReleaseOf(p, s). */
+      val literal = getInsertedLiteral(incrementValue.relation)
+      val newParam = literal.fields(incrementValue.valueIndex)
+      val resultIndex: Int = rule.head.fields.indexOf(newParam)
+      val keyIndices: List[Int] = rule.head.fields.indices.toList.filterNot(_ == resultIndex)
+      val delta: Arithmetic = Param(newParam)
+      Increment(rule.head.relation, rule.head, keyIndices, resultIndex, delta)
+    }
+    else {
       require(assignments.size == 1, s"$rule\n${incrementValue}")
-      assignments.head
-    }
-    val x: Param = {
-      val lits = rule.body.filter(_.relation == incrementValue.relation)
-      require(lits.size==1)
-      val lit = lits.head
-      val p = lit.fields(incrementValue.valueIndex)
-      Param(p)
-    }
-    // todo: support more general cases, where join exists.
-    val resultIndex: Int = rule.head.fields.indexOf(assignment.a.p)
-    val keyIndices: List[Int] = rule.head.fields.indices.toList.filterNot(_==resultIndex)
-    /** Apply the chain rule. */
-    val delta: Arithmetic = {
-      val _d = assignment.b match {
-        case arithmetic: Arithmetic => Mul(Arithmetic.derivativeOf(arithmetic, x), x)
-        case _ => ???
+      val assignment = assignments.head
+      val x: Param = {
+        val lits = rule.body.filter(_.relation == incrementValue.relation)
+        require(lits.size == 1)
+        val lit = lits.head
+        val p = lit.fields(incrementValue.valueIndex)
+        Param(p)
       }
-      val d = Arithmetic.simplify(_d)
-      d
+      // todo: support more general cases, where join exists.
+      val resultIndex: Int = rule.head.fields.indexOf(assignment.a.p)
+      val keyIndices: List[Int] = rule.head.fields.indices.toList.filterNot(_ == resultIndex)
+      /** Apply the chain rule. */
+      val delta: Arithmetic = {
+        val _d = assignment.b match {
+          case arithmetic: Arithmetic => Mul(Arithmetic.derivativeOf(arithmetic, x), x)
+          case _ => ???
+        }
+        val d = Arithmetic.simplify(_d)
+        d
+      }
+      Increment(rule.head.relation, rule.head, keyIndices, resultIndex, delta)
     }
-    Increment(rule.head.relation, rule.head, keyIndices, resultIndex, delta)
   }
 
 
