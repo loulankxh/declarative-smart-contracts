@@ -47,6 +47,15 @@ object Main extends App {
     "snt.dl",
     "kyberNetworkCrystal.dl",
     "enjToken.dl",
+    "uni.dl",
+    "pepe.dl",
+    "dai.dl",
+    "erc721.dl",
+    "erc1155.dl",
+    "ppg.dl",
+    "azuki.dl",
+    "uniswapPair.dl",
+    "cryptoPunks.dl",
     )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {
