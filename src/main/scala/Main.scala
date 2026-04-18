@@ -37,9 +37,16 @@ object Main extends App {
     // "stbt.dl",
     // "theta.dl",
     "ballot.dl",
-    // "bat.dl",
+    "bat.dl",
     "zrx.dl",
     // "golemNetworkToken.dl",
+    "fiatTokenProxy.dl",
+    "ownedUpgradeabilityProxy.dl",
+    "weth.dl",
+    "repToken.dl",
+    "snt.dl",
+    "kyberNetworkCrystal.dl",
+    "enjToken.dl",
     )
 
   def getMaterializedRelations(dl: Program, filepath: String): List[(Set[Relation],Set[Relation])] = {

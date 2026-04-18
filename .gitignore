@@ -10,3 +10,11 @@ truffle-config.js
 BenchmarkNew/
 
 solidity/
+
+# new contracts
+**/enjToken*
+**/enjToken*/
+**/kyberNetworkCrystal*
+**/kyberNetworkCrystal*/
+**/snt*
+**/snt*/

@@ -39,13 +39,6 @@ case class SolidityTranslator(program: ImperativeAbstractProgram, dl: Program,
     }
   }
   private val simplifier = new Simplifier()
-  private val dataStructureHelper: Map[Relation, DataStructureHelper] = relations.map{
-    case rel: SimpleRelation => {
-      /** todo: handle situation with no indices */
-      rel -> DataStructureHelper(rel, indices.getOrElse(rel, List()),enableProjection)
-    }
-    case rel @ (_:SingletonRelation|_:ReservedRelation) => rel -> DataStructureHelper(rel, List(),enableProjection)
-  }.toMap
   private val materializedRelations: Set[Relation] = {
     val sendRelation = program.relations.filter(_ == Send())
     val _v = if (monitorViolation) violations else Set()
@@ -56,6 +49,13 @@ case class SolidityTranslator(program: ImperativeAbstractProgram, dl: Program,
       getMaterializedRelations(program,interfaces) ++ _v ++ sendRelation
     }
   }
+  private val dataStructureHelper: Map[Relation, DataStructureHelper] = relations.map{
+    case rel: SimpleRelation => {
+      /** todo: handle situation with no indices */
+      rel -> DataStructureHelper(rel, indices.getOrElse(rel, List()), enableProjection, materializedRelations.contains(rel))
+    }
+    case rel @ (_:SingletonRelation|_:ReservedRelation) => rel -> DataStructureHelper(rel, List(), enableProjection, materializedRelations.contains(rel))
+  }.toMap
   private val functionHelpers: Map[OnStatement,FunctionHelper] = program.onStatements.map(
     on=>on->FunctionHelper(on)).toMap
   private val dependentFunctions: Map[Relation, Set[FunctionHelper]] = functionHelpers.values.toSet.groupBy(_.inRel)

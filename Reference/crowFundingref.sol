@@ -12,7 +12,8 @@ contract Escrow {
   // uint256 totalFunds;
   uint256 raised;
 
-  constructor(address payable b) public {
+  // constructor(address payable b) public {
+  constructor(address payable b) {
     beneficiary = b;
     owner = msg.sender;
     // totalFunds = 0;
@@ -51,15 +52,21 @@ contract CrowFunding {
   Escrow escrow;
   uint256 raised = 0;
   uint256 goal = 10000 * 10**18;
-  uint256 closeTime = block.timestamp + 30 days;
+  // closeTime is now passed in via the constructor for testing
+  // Keeping the reference contract's signature aligned with the generated Datlog variants
+  // lets a single test trace drive all versions.
+  // uint256 closeTime = block.timestamp + 30 days;
+  uint256 closeTime;
   bool closed;
 
   //address payable constant init = payable(address(uint160(0xDEADBEEF)));
 
-  constructor(uint256 _goal, address _escrow) public{
+  // constructor(uint256 _goal, address _escrow) public
+  constructor(uint256 _goal, address _escrow, uint256 _closeTime) {
     // escrow = new Escrow(payable(address(0xDEADBEEF)));
     escrow = new Escrow(payable(_escrow));
     goal = _goal;
+    closeTime = _closeTime;
     closed = false;
   }
 
@@ -83,5 +90,5 @@ contract CrowFunding {
 }
 
 contract Deployer{
-    CrowFunding c = new CrowFunding(10000 * 10**18, address(0xDEADBEEF));
+    CrowFunding c = new CrowFunding(10000 * 10**18, address(0xDEADBEEF), block.timestamp + 30 days);
 }

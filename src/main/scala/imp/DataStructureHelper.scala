@@ -4,7 +4,7 @@ import datalog.{Add, AnyType, Balance, BooleanType, CompoundType, Constant, Lite
 import imp.DataStructureHelper.{getUpdateName, invalidBit, validBit, validField}
 import view.View
 
-case class DataStructureHelper(relation: Relation, indices: List[Int], enableProjection: Boolean) {
+case class DataStructureHelper(relation: Relation, indices: List[Int], enableProjection: Boolean, isMaterialized: Boolean = true) {
   require(indices.forall(i => relation.sig.indices.contains(i)))
   val keyTypes: List[Type] = indices.map(i=>relation.sig(i))
   val valueIndices: List[Int] = relation.sig.indices.filterNot(i=>indices.contains(i)).toList
@@ -96,7 +96,17 @@ case class DataStructureHelper(relation: Relation, indices: List[Int], enablePro
     val keyStr = keyList.map(k => s"[$k]").mkString("")
     val fieldName = increment.relation.memberNames(increment.valueIndex)
     val newValue = Variable(valueType, "newValue")
-    val x = Variable(valueType, s"${increment.relation.name}$keyStr.$fieldName")
+    val xName = if (!isMaterialized) {
+      increment.relation match {
+        case _: SingletonRelation => s"${increment.relation.name}()"
+        case _: SimpleRelation =>
+          val keyArgs = keyList.mkString(",")
+          s"${increment.relation.name}($keyArgs)"
+      }
+    } else {
+      s"${increment.relation.name}$keyStr.$fieldName"
+    }
+    val x = Variable(valueType, xName)
     // val delta = Variable(increment.delta._type, "_delta")
     val delta = Variable(deltaType, "_delta")
     val convertType = ConvertType(increment.delta, delta)
